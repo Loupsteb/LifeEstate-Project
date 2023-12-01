@@ -22,10 +22,8 @@ contract LifeEstateFactory {
         bool _pool,
         bool _garage,
         bool _garden,
-        string memory _uri,
-        uint256[] memory _partTotalSupplies,
-        uint256[] memory _partPrices
-    ) public {
+        string memory _uri
+    ) public returns (address) {
         LifeEstateNFT newLifeEstate = new LifeEstateNFT(
             _propertyName,
             _marketPrice,
@@ -39,9 +37,19 @@ contract LifeEstateFactory {
             _garden,
             _uri
         );
-        newLifeEstate.setPartDetails(_partTotalSupplies, _partPrices);
         LifeEstateAddresses.push(address(newLifeEstate));
         emit LifeEstateDeployed(address(newLifeEstate), _propertyName);
+
+        return address(newLifeEstate);
+    }
+
+    function initLifeEstateParts(
+        address newLifeEstate,
+        uint256[] memory _partTotalSupplies,
+        uint256[] memory _partPrices
+    ) public {
+        LifeEstateNFT newNFT = LifeEstateNFT(newLifeEstate);
+        newNFT.setPartDetails(_partTotalSupplies, _partPrices);
     }
 
     //for get all properties

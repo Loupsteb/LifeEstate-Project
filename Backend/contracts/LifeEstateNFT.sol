@@ -17,10 +17,10 @@ contract LifeEstateNFT is ERC1155, Ownable {
     //struct for an estate, like number of rooms, if a pool is present, etc.
     struct EstateSpecs {
         uint256 marketPrice;
+        string propertyName;
         uint256 propertySurfaceInSquareMeters;
         uint256 rooms;
         uint256 bedRooms;
-        string propertyName;
         string cityLocation;
         string countryLocation;
         bool pool;
@@ -165,7 +165,7 @@ contract LifeEstateNFT is ERC1155, Ownable {
         //tu t'assures que tu as autant de valeur que d'id (0 à max) et qu'il n'en manque pas ds un tableau
         require(
             _partTotalSupplies.length == _partPrices.length &&
-                _partPrices.length == PART_10_ID,
+                _partPrices.length == PART_10_ID + 1,
             "Part ID is invalid"
         );
         initialized = true;
