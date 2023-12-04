@@ -2,14 +2,17 @@
 pragma solidity ^0.8.20;
 
 import "./LifeEstateNFT.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract LifeEstateFactory {
+contract LifeEstateFactory is Ownable {
     address[] public LifeEstateAddresses;
 
     event LifeEstateDeployed(
         address indexed propertyAddress,
         string propertyName
     );
+
+    constructor() Ownable(msg.sender) {}
 
     function deployLifeEstate(
         string memory _propertyName,
@@ -18,7 +21,7 @@ contract LifeEstateFactory {
         uint256 _rooms,
         uint256 _bedRooms,
         string memory _cityLocation,
-        string memory _countryLocation,
+        // string memory _countryLocation,
         bool _pool,
         bool _garage,
         bool _garden,
@@ -31,7 +34,7 @@ contract LifeEstateFactory {
             _rooms,
             _bedRooms,
             _cityLocation,
-            _countryLocation,
+            // _countryLocation,
             _pool,
             _garage,
             _garden,

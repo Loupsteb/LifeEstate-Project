@@ -26,6 +26,7 @@ contract LifeEstateNFT is ERC1155, Ownable {
         bool pool;
         bool garage;
         bool garden;
+        string uri;
     }
 
     EstateSpecs public estateSpecs;
@@ -34,7 +35,7 @@ contract LifeEstateNFT is ERC1155, Ownable {
     address payable public treasuryAddress;
 
     // boolean to check if the contract is initialized
-    bool initialized = false;
+    bool public initialized = false;
 
     //mapping for store the PartDetails to the partId
     mapping(uint256 => EstateShare) public parts;
@@ -42,30 +43,14 @@ contract LifeEstateNFT is ERC1155, Ownable {
     //mapping for store the approved erc20 token for minting
     mapping(address => bool) public approvedTokens;
 
-    uint256 public constant PART_0_ID = 0;
-    uint256 public constant PART_1_ID = 1;
-    uint256 public constant PART_2_ID = 2;
-    uint256 public constant PART_3_ID = 3;
-    uint256 public constant PART_4_ID = 4;
-    uint256 public constant PART_5_ID = 5;
-    uint256 public constant PART_6_ID = 6;
-    uint256 public constant PART_7_ID = 7;
-    uint256 public constant PART_8_ID = 8;
-    uint256 public constant PART_9_ID = 9;
-    uint256 public constant PART_10_ID = 10;
+    // ID of the parts is from 0 to Part_Max    uint256 public constant PART_0_ID = 0;
+    uint256 public constant PARTMAX_ID = 10;
 
     //event for the set of a part
     event PartSet(
         uint256 _partType,
         uint256 _partTotalSupply,
         uint256 _partPrice
-    );
-
-    //event for when the part are set
-    event PartsSet(
-        uint256[] _partTypes,
-        uint256[] _partTotalSupplies,
-        uint256[] _partPrices
     );
 
     // event for when a new part is minted
@@ -76,41 +61,7 @@ contract LifeEstateNFT is ERC1155, Ownable {
     );
 
     //event for when multiple parts are minted on same time
-    event PartsMinted(
-        address indexed _owner,
-        uint256[] indexed _partIds,
-        uint256[] _amounts
-    );
-
-    //event for when a part is transferred
-    event PartTransferred(
-        address indexed _from,
-        address indexed _to,
-        uint256 indexed _partId,
-        uint256 _amount
-    );
-
-    //envent for when multiple parts are transferred on same time
-    event PartsTransferred(
-        address indexed _from,
-        address indexed _to,
-        uint256[] indexed _partIds,
-        uint256[] _amounts
-    );
-
-    //event for when a part is ressel on the market place
-    event PartResold(
-        address indexed _owner,
-        uint256 indexed _partId,
-        uint256 _amount
-    );
-
-    //event for when a part is rebuy on the market place
-    event PartRebuy(
-        address indexed _owner,
-        uint256 indexed _partId,
-        uint256 _amount
-    );
+    event PartsMinted(address indexed _owner, bytes32 encodedTokens);
 
     //event for when the fund from the treasury address are withdraw
     event ERC20Withdrawn(
@@ -126,7 +77,7 @@ contract LifeEstateNFT is ERC1155, Ownable {
         uint256 _rooms,
         uint256 _bedRooms,
         string memory _cityLocation,
-        string memory _countryLocation,
+        // string memory _countryLocation,
         bool _pool,
         bool _garage,
         bool _garden,
@@ -141,10 +92,11 @@ contract LifeEstateNFT is ERC1155, Ownable {
         _estateSpecs.bedRooms = _bedRooms;
         _estateSpecs.propertyName = _propertyName;
         _estateSpecs.cityLocation = _cityLocation;
-        _estateSpecs.countryLocation = _countryLocation;
+        // _estateSpecs.countryLocation = _countryLocation;
         _estateSpecs.pool = _pool;
         _estateSpecs.garage = _garage;
         _estateSpecs.garden = _garden;
+        _estateSpecs.uri = _uri;
 
         estateSpecs = _estateSpecs;
     }
@@ -165,12 +117,12 @@ contract LifeEstateNFT is ERC1155, Ownable {
         //tu t'assures que tu as autant de valeur que d'id (0 à max) et qu'il n'en manque pas ds un tableau
         require(
             _partTotalSupplies.length == _partPrices.length &&
-                _partPrices.length == PART_10_ID + 1,
+                _partPrices.length == PARTMAX_ID + 1,
             "Part ID is invalid"
         );
         initialized = true;
 
-        for (uint256 i = 0; i <= PART_10_ID; i++) {
+        for (uint256 i = 0; i <= PARTMAX_ID; i++) {
             EstateShare memory newShare;
             newShare.mintSupply = _partTotalSupplies[i];
             newShare.totalSupply = _partTotalSupplies[i];
@@ -202,14 +154,17 @@ contract LifeEstateNFT is ERC1155, Ownable {
     //-----------------Mint Function-----------------//
 
     //make a fonction for approve a erc20 token for minting
-    function setApprovedToken(
-        address tokenAddress,
+    function setApprovedTokens(
+        address[] memory tokenAddresses,
         bool isApproved
     ) public onlyOwner {
-        approvedTokens[tokenAddress] = isApproved;
+        uint256 arrayLength = tokenAddresses.length;
+        for (uint256 i = 0; i < arrayLength; i++) {
+            approvedTokens[tokenAddresses[i]] = isApproved;
+        }
     }
 
-    function buyTokenWithERC20(
+    function mintBuyToken(
         uint256 partId,
         uint256 amount,
         address tokenAddress
@@ -235,7 +190,8 @@ contract LifeEstateNFT is ERC1155, Ownable {
     }
 
     //Buy multiple tokens with ERC20 token
-    function buyMultipleTokensWithERC20(
+    //todo : ATTENTION RAJOUTER L EVENT !!!!!!!!!!!
+    function buyMultipleMintTokens(
         uint256[] memory partIds,
         uint256[] memory amounts,
         address tokenAddress
@@ -261,15 +217,22 @@ contract LifeEstateNFT is ERC1155, Ownable {
 
         //Transfert the tokens from the buyer to the designed contract
         token.transferFrom(msg.sender, address(this), totalPrice);
-
+        // string memory encodedInfos = "";
+        // uint256[] memory encodedInfos = new uint256[](partIds.length * 2);
         // actualise the supply of each part
         for (uint256 i = 0; i < partIds.length; i++) {
             parts[partIds[i]].mintSupply -= amounts[i];
             parts[partIds[i]].circulatingSupply += amounts[i];
+            // encodedInfos[i * 2] = i;
+            // encodedInfos[(i * 2) + 1] = amounts[i];
         }
+        // bytes32 encodedTokens = keccak256(abi.encodePacked(encodedInfos));
+
+        //get keccak256 of encodedInfos array
+        // bytes32 encodedTokens = keccak256(abi.encode(encodedInfos));
         _mintBatch(msg.sender, partIds, amounts, "");
 
-        emit PartsMinted(msg.sender, partIds, amounts);
+        // emit PartsMinted(msg.sender, encodedTokens);
     }
 
     //ATTENTION ICI CA CA MARCHE POUR DE L ETHER !!!!
