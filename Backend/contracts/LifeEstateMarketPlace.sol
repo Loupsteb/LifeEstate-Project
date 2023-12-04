@@ -8,6 +8,7 @@ pragma solidity 0.8.20;
 
 import "./LifeEstateFactory.sol";
 import "./LifeEstateNFT.sol";
+import "./LoupUSDT.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
@@ -20,7 +21,7 @@ contract LifeEstateMarketPlace is ERC1155Holder, Ownable, ReentrancyGuard {
     //Variables
     struct Listing {
         address seller;
-        uint256 tokenId; // du mal a comprendre comment recup ID du token suite au deploy
+        uint256 tokenId;
         uint256 amount;
         uint256 price; // Price per token
         bool active;
@@ -36,7 +37,7 @@ contract LifeEstateMarketPlace is ERC1155Holder, Ownable, ReentrancyGuard {
     mapping(uint256 => Listing) public listings;
 
     //mapping for protocole balance of tokens taxe
-    mapping(address => uint256) public marketTokensBalance;
+    // mapping(address => uint256) public marketTokensBalance;
 
     //security checker
     uint256 public listingCounter;
@@ -134,13 +135,12 @@ contract LifeEstateMarketPlace is ERC1155Holder, Ownable, ReentrancyGuard {
     //buy a token
     //todo: make a partial buy token function
 
-    function buyToken(
+    function buyListedToken(
         uint256 listingID,
         address tokenAddress
     ) public nonReentrant {
         Listing storage listing = listings[listingID];
         require(listing.active, "Token not listed for sale");
-
         // Récupération des valeurs de tokenId et amount à partir de la struct listing
         uint256 tokenId = listing.tokenId;
         uint256 amount = listing.amount;
@@ -154,8 +154,12 @@ contract LifeEstateMarketPlace is ERC1155Holder, Ownable, ReentrancyGuard {
             "Not enough token balance"
         );
 
-        //Transfert the tokens from the seller to the buyer
         LifeEstateNFT NftToBuy = LifeEstateNFT(listing.newLifeEstate);
+        require(
+            NftToBuy.balanceOf(listing.seller, tokenId) >= amount,
+            "The seller do not have the same amount of token"
+        );
+        //Transfert the tokens from the seller to the buyer
         NftToBuy.safeTransferFrom(
             listing.seller,
             msg.sender,
@@ -195,9 +199,9 @@ contract LifeEstateMarketPlace is ERC1155Holder, Ownable, ReentrancyGuard {
     // Withdraw funds from contract to owner
     function withdrawFunds() public onlyOwner {
         for (uint256 i = 0; i < approvedTokens.length; i++) {
-            IERC20 token = IERC20(approvedTokens[i]);
+            ERC20 token = ERC20(approvedTokens[i]);
             uint256 balance = token.balanceOf(address(this));
-            marketTokensBalance[approvedTokens[i]] = 0;
+            // marketTokensBalance[approvedTokens[i]] = 0;
             token.transfer(owner(), balance);
             emit FundsWithdrawn(owner(), balance);
         }
