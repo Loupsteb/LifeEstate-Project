@@ -5,8 +5,11 @@ import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
+/// @title A token contract representing fractional ownership in real estate properties
+/// @notice This contract allows for the minting and trading of fractional real estate shares represented as ERC1155 tokens
+/// @dev Inherits from ERC1155 for NFT functionality and Ownable for access control
 contract LifeEstateNFT is ERC1155, Ownable {
-    //struct of the details of a lifeEstate share
+    /// @dev Details of a life estate share including supply metrics and price
     struct EstateShare {
         uint256 mintSupply;
         uint256 totalSupply;
@@ -14,7 +17,7 @@ contract LifeEstateNFT is ERC1155, Ownable {
         uint256 price;
     }
 
-    //struct for an estate, like number of rooms, if a pool is present, etc.
+    /// @dev Specifications of a real estate property including location and features
     struct EstateSpecs {
         uint256 marketPrice;
         string propertyName;
@@ -31,45 +34,47 @@ contract LifeEstateNFT is ERC1155, Ownable {
 
     EstateSpecs public estateSpecs;
 
-    //address of the Dapp's treasury
+    /// @dev Address where the contract's funds are stored
     address payable public treasuryAddress;
 
-    // boolean to check if the contract is initialized
+    /// @dev A flag indicating if the contract's parts have been initialized
     bool public initialized = false;
 
-    //mapping for store the PartDetails to the partId
+    /// @dev Mapping to store each part's details keyed by part ID
     mapping(uint256 => EstateShare) public parts;
 
-    //mapping for store the approved erc20 token for minting
+    /// @dev Mapping to store an ERC20 token is approved for minting parts
     mapping(address => bool) public approvedTokens;
 
-    // ID of the parts is from 0 to Part_Max    uint256 public constant PART_0_ID = 0;
+    /// @dev Just declare the maximum part ID as a constant
     uint256 public constant PARTMAX_ID = 10;
 
-    //event for the set of a part
-    event PartSet(
-        uint256 _partType,
-        uint256 _partTotalSupply,
-        uint256 _partPrice
-    );
-
-    // event for when a new part is minted
+    /// @notice Events for various actions within the contract
+    event PartSet(uint256 indexed partId, uint256 mintSupply, uint256 price);
     event PartMinted(
-        address indexed _owner,
-        uint256 indexed _partId,
-        uint256 _amount
+        address indexed owner,
+        uint256 indexed partId,
+        uint256 amount
     );
-
-    //event for when multiple parts are minted on same time
-    event PartsMinted(address indexed _owner, bytes32 encodedTokens);
-
-    //event for when the fund from the treasury address are withdraw
+    event PartsMinted(address indexed owner, bytes32 indexed encodedTokens);
     event ERC20Withdrawn(
-        address indexed _owner,
-        address tokenAddress,
-        uint256 _amount
+        address indexed owner,
+        address indexed tokenAddress,
+        uint256 amount
     );
 
+    /// @notice Initializes a new estate with specified details and sets the contract owner
+    /// @param _propertyName The name of the property
+    /// @param _marketPrice The market price of the property
+    /// @param _propertySurfaceInSquareMeters The surface area of the property in square meters
+    /// @param _rooms The number of rooms in the property
+    /// @param _bedRooms The number of bedrooms in the property
+    /// @param _cityLocation The city where the property is located
+    /// @param _countryLocation The country where the property is located
+    /// @param _pool Whether the property has a pool
+    /// @param _garage Whether the property has a garage
+    /// @param _garden Whether the property has a garden
+    /// @param _uri The metadata URI for the property
     constructor(
         string memory _propertyName,
         uint256 _marketPrice,
@@ -77,7 +82,6 @@ contract LifeEstateNFT is ERC1155, Ownable {
         uint256 _rooms,
         uint256 _bedRooms,
         string memory _cityLocation,
-        // string memory _countryLocation,
         bool _pool,
         bool _garage,
         bool _garden,
@@ -92,7 +96,6 @@ contract LifeEstateNFT is ERC1155, Ownable {
         _estateSpecs.bedRooms = _bedRooms;
         _estateSpecs.propertyName = _propertyName;
         _estateSpecs.cityLocation = _cityLocation;
-        // _estateSpecs.countryLocation = _countryLocation;
         _estateSpecs.pool = _pool;
         _estateSpecs.garage = _garage;
         _estateSpecs.garden = _garden;
@@ -101,20 +104,16 @@ contract LifeEstateNFT is ERC1155, Ownable {
         estateSpecs = _estateSpecs;
     }
 
-    //-----------------Set Part Details-----------------//
-
-    //PRECISER @dev qu'on attend les valeurs ds le meme ordre ex id0 = ID0, supplis de ID0, prix deID0
-    //ETANT DONNE que tu recois ds l'ordre ds le tableau :
-    //on pourrait dire quà l'index 0 c'est ID0, index1 c'est ID1 => ca ferait un param en moins
-    //EN require tu check que length = 11 (ton nbr d'id)
-    //function to set the details of a part
-    //Public function because the factory need to call it for create a new property
+    /// @notice Initializes the parts with their total supplies and prices
+    /// @dev Sets the part details for all parts at once, marking the contract as initialized
+    /// @param _partTotalSupplies An array of the total supply for each part
+    /// @param _partPrices An array of prices for each part
+    /// @custom:modifier onlyOwner Only the owner can initialize the parts
     function setPartDetails(
         uint256[] memory _partTotalSupplies,
         uint256[] memory _partPrices
     ) public onlyOwner {
         require(!initialized, "Parts are already initialized");
-        //tu t'assures que tu as autant de valeur que d'id (0 à max) et qu'il n'en manque pas ds un tableau
         require(
             _partTotalSupplies.length == _partPrices.length &&
                 _partPrices.length == PARTMAX_ID + 1,
@@ -132,28 +131,27 @@ contract LifeEstateNFT is ERC1155, Ownable {
         }
     }
 
-    //-----------------Get Function-----------------//
-
-    //je ne sais pas si tout les getters sont necessaires car tu peux recup une struct et la lire
-    //ds le front (tu corrigera qd tu sera au front si tu vois que pas necessaire)
-    //l'esetniel c'est get ta struct et eventuellement prix et supply pour faciliter
-    //l'info pour la marketplace ou la page de mint
-
-    //function to get the struct EstateShare from his ID
+    /// @notice Retrieves the estate share details for a given part ID
+    /// @dev View function to get details from the parts mapping
+    /// @param partId The ID of the part for which to retrieve details
+    /// @return EstateShare memory The details of the specified part
     function getEstateShare(
         uint256 partId
     ) public view returns (EstateShare memory) {
         return parts[partId];
     }
 
-    //function to get all the information of the EstateSpecs struct
+    /// @notice Retrieves all the information of the estate specifications
+    /// @dev View function to get details from the estateSpecs struct
+    /// @return estateSpecs memory The details of the estate specifications
     function getEstateSpecs() public view returns (EstateSpecs memory) {
         return estateSpecs;
     }
 
-    //-----------------Mint Function-----------------//
-
-    //make a fonction for approve a erc20 token for minting
+    /// @notice Approves or disapproves ERC20 tokens for minting NFT parts
+    /// @dev Only the owner can call this function to update the approvedTokens mapping
+    /// @param tokenAddresses An array of token addresses to set approval
+    /// @param isApproved The approval status to set for the given token addresses
     function setApprovedTokens(
         address[] memory tokenAddresses,
         bool isApproved
@@ -164,6 +162,11 @@ contract LifeEstateNFT is ERC1155, Ownable {
         }
     }
 
+    /// @notice Mints a new token part if the token is approved and the buyer has enough balance
+    /// @dev Transfers the required amount of ERC20 tokens from the buyer to this contract as payment
+    /// @param partId The ID of the part to mint
+    /// @param amount The amount of the part to mint
+    /// @param tokenAddress The address of the ERC20 token to use for payment
     function mintBuyToken(
         uint256 partId,
         uint256 amount,
@@ -179,18 +182,20 @@ contract LifeEstateNFT is ERC1155, Ownable {
             "Not enough token balance"
         );
 
-        //Transfert the tokens from the buyer to the designed contract
         token.transferFrom(msg.sender, address(this), totalPrice);
 
-        parts[partId].mintSupply -= amount; // Décrémente le supply
+        parts[partId].mintSupply -= amount;
         parts[partId].circulatingSupply += amount;
         _mint(msg.sender, partId, amount, "");
 
         emit PartMinted(msg.sender, partId, amount);
     }
 
-    //Buy multiple tokens with ERC20 token
-    //todo : ATTENTION RAJOUTER L EVENT !!!!!!!!!!!
+    /// @notice Buys multiple token parts with the specified ERC20 token
+    /// @dev Ensures all parts have enough supply and the buyer has enough balance before minting
+    /// @param partIds An array of part IDs to mint
+    /// @param amounts An array of amounts for each part ID to mint
+    /// @param tokenAddress The address of the ERC20 token to use for payment
     function buyMultipleMintTokens(
         uint256[] memory partIds,
         uint256[] memory amounts,
@@ -200,7 +205,6 @@ contract LifeEstateNFT is ERC1155, Ownable {
         IERC20 token = IERC20(tokenAddress);
         uint256 totalPrice = 0;
 
-        // Calculate the number of tokens to mint and the total price
         for (uint256 i = 0; i < partIds.length; i++) {
             require(
                 parts[partIds[i]].mintSupply >= amounts[i],
@@ -209,35 +213,26 @@ contract LifeEstateNFT is ERC1155, Ownable {
             totalPrice += amounts[i] * parts[partIds[i]].price;
         }
 
-        // Verify that the buyer has enough balance
         require(
             token.balanceOf(msg.sender) >= totalPrice,
             "Not enough token balance"
         );
 
-        //Transfert the tokens from the buyer to the designed contract
         token.transferFrom(msg.sender, address(this), totalPrice);
-        // string memory encodedInfos = "";
-        // uint256[] memory encodedInfos = new uint256[](partIds.length * 2);
-        // actualise the supply of each part
+
         for (uint256 i = 0; i < partIds.length; i++) {
             parts[partIds[i]].mintSupply -= amounts[i];
             parts[partIds[i]].circulatingSupply += amounts[i];
-            // encodedInfos[i * 2] = i;
-            // encodedInfos[(i * 2) + 1] = amounts[i];
         }
-        // bytes32 encodedTokens = keccak256(abi.encodePacked(encodedInfos));
 
-        //get keccak256 of encodedInfos array
-        // bytes32 encodedTokens = keccak256(abi.encode(encodedInfos));
         _mintBatch(msg.sender, partIds, amounts, "");
 
-        // emit PartsMinted(msg.sender, encodedTokens);
+        // TODO: Add event emission for PartsMinted
     }
 
-    //ATTENTION ICI CA CA MARCHE POUR DE L ETHER !!!!
-    //pour les dai... faut : transferFrom du token vers votre wallet
-    // fuction for withdraw the funds of the treasury address
+    /// @notice Withdraws the accumulated ERC20 tokens from the contract to the owner's address
+    /// @dev Only the owner can call this function to transfer all balances of approved tokens
+    /// @param tokenAddress The address of the ERC20 token to withdraw from the contract
     function withdrawERC20(address tokenAddress) external onlyOwner {
         IERC20 token = IERC20(tokenAddress);
         uint256 balance = token.balanceOf(address(this));

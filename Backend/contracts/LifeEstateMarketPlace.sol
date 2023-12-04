@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-/// @title MarketPlace for the LifeEstateNFT
-/// @author Loup Esteban
-/// @notice This contract is using for the secondary market of the LifeEstateNFT
-/// @dev Explain to a developer any extra details
+/**
+ * @title MarketPlace for LifeEstate NFT
+ * @dev Manages the listing, selling, and buying of NFT parts representing shares in real estate properties.
+ * This contract uses ReentrancyGuard to prevent re-entrant calls.
+ */
 
 import "./LifeEstateFactory.sol";
 import "./LifeEstateNFT.sol";
@@ -16,86 +17,57 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 contract LifeEstateMarketPlace is ERC1155Holder, Ownable, ReentrancyGuard {
+    // Reference to the NFT contract with which this marketplace interacts.
     IERC1155 public lifeEstateNFT;
 
-    //Variables
-    struct Listing {
-        address seller;
-        uint256 tokenId;
-        uint256 amount;
-        uint256 price; // Price per token
-        bool active;
-        address newLifeEstate;
-    }
-
-    address[] public approvedTokens;
-
-    //percents of the operational fee
+    // The fee percentage that the marketplace charges for every transaction.
     uint256 public operationFee = 5;
 
-    //mapping listing index to listings
+    // An array of ERC20 token addresses that are approved for use in the marketplace.
+    address[] public approvedTokens;
+
+    // A counter to keep track of the number of listings.
+    uint256 private listingCounter;
+
+    // A struct representing a listing for an NFT on the marketplace.
+    struct Listing {
+        address seller; // The address of the seller.
+        uint256 tokenId; // The ID of the NFT being sold.
+        uint256 amount; // The amount of the particular NFT token being sold.
+        uint256 price; // The price per token.
+        bool active; // Whether the listing is active.
+        address newLifeEstate; // The address of the specific LifeEstate NFT contract.
+    }
+
+    // Mapping from listing ID to the listing struct, storing details of the listing.
     mapping(uint256 => Listing) public listings;
 
-    //mapping for protocole balance of tokens taxe
-    // mapping(address => uint256) public marketTokensBalance;
-
-    //security checker
-    uint256 public listingCounter;
-
-    //Events
-    //event for when a new listing is created
+    // Events
     event TokenListingCreated(
         uint256 indexed tokenId,
         uint256 amount,
         uint256 price
     );
-
-    //envent when a token is bought
     event TokenBought(uint256 indexed tokenId, uint256 amount, uint256 price);
-
-    //event when a list of tokens is bought
-    event TokensBought(
-        uint256[] indexed tokenIds,
-        uint256[] amounts,
-        uint256[] prices
-    );
-
-    //event when a token is sold
-    event TokenSold(uint256 indexed tokenId, uint256 amount, uint256 price);
-
-    //event when a list of tokens is sold
-    event TokensSold(
-        uint256[] indexed tokenIds,
-        uint256[] amounts,
-        uint256[] prices
-    );
-
-    //event when a listing is delisted/removed
     event TokenListingRemoved(uint256 indexed tokenId);
-
-    //event when the fund are withdrawn from the contract to the owner address
     event FundsWithdrawn(address indexed _owner, uint256 _amount);
 
-    // address factoryAddress;
-
-    // //Constructor
-    // constructor(address _factoryAddress) {
-    //   factoryAddress = _factoryAddress;
-    // }
-
-    //--------------------------------//
-
-    LifeEstateFactory public factory;
-
-    //Constructor
+    /**
+     * @dev Initializes the contract by setting the factory contract address and the owner.
+     * @param _factoryAddress Address of the LifeEstateFactory contract.
+     */
     constructor(address _factoryAddress) Ownable(msg.sender) {
         factory = LifeEstateFactory(_factoryAddress);
     }
 
-    //Modifier
-
-    //Functions
-    //create a listing for a token
+    /**
+     * @notice Creates a listing for a token.
+     * @dev Requires approval from the token owner for the marketplace to manage their tokens.
+     * @param tokenId The token ID to list.
+     * @param amount The amount of the token to list.
+     * @param price The listing price per token.
+     * @param newLifeEstate The associated LifeEstate NFT contract address.
+     */
     //todo : make a listing with variety of tokensID (type of parts)
 
     function listToken(
@@ -105,7 +77,6 @@ contract LifeEstateMarketPlace is ERC1155Holder, Ownable, ReentrancyGuard {
         address newLifeEstate
     ) public {
         LifeEstateNFT propertyToSale = LifeEstateNFT(newLifeEstate);
-        //The seller needs to have approved the marketplace to manage their tokens
         require(
             propertyToSale.isApprovedForAll(msg.sender, address(this)),
             "Marketplace needs approval to manage tokens"
@@ -115,7 +86,6 @@ contract LifeEstateMarketPlace is ERC1155Holder, Ownable, ReentrancyGuard {
             "Not enough tokens owned to list"
         );
 
-        //Create a new listing
         listings[listingCounter] = Listing(
             msg.sender,
             tokenId,
@@ -126,22 +96,22 @@ contract LifeEstateMarketPlace is ERC1155Holder, Ownable, ReentrancyGuard {
         );
         listingCounter += 1;
 
-        //Send an event when a new listing is created
         emit TokenListingCreated(tokenId, amount, price);
     }
 
-    //create a listing for a bunch of tokens
-
-    //buy a token
-    //todo: make a partial buy token function
-
+    /**
+     * @notice Allows a user to buy a token that has been listed in the marketplace.
+     * @dev Ensures the transaction is not re-entrant.
+     * @param listingID The ID of the listing to buy from.
+     * @param tokenAddress The ERC20 token address to use for payment.
+     */
     function buyListedToken(
         uint256 listingID,
         address tokenAddress
     ) public nonReentrant {
         Listing storage listing = listings[listingID];
         require(listing.active, "Token not listed for sale");
-        // Récupération des valeurs de tokenId et amount à partir de la struct listing
+
         uint256 tokenId = listing.tokenId;
         uint256 amount = listing.amount;
 
@@ -159,7 +129,7 @@ contract LifeEstateMarketPlace is ERC1155Holder, Ownable, ReentrancyGuard {
             NftToBuy.balanceOf(listing.seller, tokenId) >= amount,
             "The seller do not have the same amount of token"
         );
-        //Transfert the tokens from the seller to the buyer
+
         NftToBuy.safeTransferFrom(
             listing.seller,
             msg.sender,
@@ -172,15 +142,13 @@ contract LifeEstateMarketPlace is ERC1155Holder, Ownable, ReentrancyGuard {
 
         delete listings[listingID];
 
-        // if listingID < listingCounter && listingID != 0 {
-        //   listings[listingID] = listings[listingCounter - 1];
-        //   delete listings[listingCounter - 1];
-        // }
-
         emit TokenBought(tokenId, amount, listing.price);
     }
 
-    //cancel a token sell
+    /**
+     * @notice Cancels a token listing if the caller is the seller.
+     * @param tokenId The ID of the token listing to cancel.
+     */
     function cancelListing(uint256 tokenId) public {
         Listing storage listing = listings[tokenId];
         require(
@@ -192,11 +160,17 @@ contract LifeEstateMarketPlace is ERC1155Holder, Ownable, ReentrancyGuard {
         emit TokenListingRemoved(tokenId);
     }
 
+    /**
+     * @notice Approves a new ERC20 token for transactions within the marketplace.
+     * @param tokenAddress The address of the token to approve.
+     */
     function setApprovedToken(address tokenAddress) public onlyOwner {
         approvedTokens.push(tokenAddress);
     }
 
-    // Withdraw funds from contract to owner
+    /**
+     * @notice Withdraws the funds accumulated from sales to the contract owner's address.
+     */
     function withdrawFunds() public onlyOwner {
         for (uint256 i = 0; i < approvedTokens.length; i++) {
             ERC20 token = ERC20(approvedTokens[i]);
