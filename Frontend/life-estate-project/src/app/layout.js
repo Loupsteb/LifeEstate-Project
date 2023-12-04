@@ -10,6 +10,8 @@ import { configureChains, createConfig, WagmiConfig } from "wagmi";
 import { hardhat } from "wagmi/chains";
 import { publicProvider } from "wagmi/providers/public";
 
+import Navbar from "./components/Navbar";
+
 const { chains, publicClient } = configureChains([hardhat], [publicProvider()]);
 
 const { connectors } = getDefaultWallets({
@@ -29,7 +31,10 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body>
         <WagmiConfig config={wagmiConfig}>
-          <RainbowKitProvider chains={chains}>{children}</RainbowKitProvider>
+          <RainbowKitProvider chains={chains}>
+            <Navbar />
+            {children}
+          </RainbowKitProvider>
         </WagmiConfig>
       </body>
     </html>
