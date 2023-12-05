@@ -1,13 +1,13 @@
 "use client";
 
 import Header from "../components/Header/header";
-import Submit from "../components/Button/submitButton";
+import FormEstate from "../admin/form";
 
 export default function Home() {
   return (
     <>
       <Header />
-      <Submit />
+      <FormEstate />
     </>
   );
 }
