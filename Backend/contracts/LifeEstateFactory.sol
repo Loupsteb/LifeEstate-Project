@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 /// @notice This contract allows deployment and initialization of LifeEstateNFT instances.
 contract LifeEstateFactory is Ownable {
     /// @notice Array of deployed LifeEstateNFT contract addresses.
-    address[] public LifeEstateAddresses;
+    address[] private LifeEstateAddresses;
 
     /// @notice Emitted when a new LifeEstateNFT contract is deployed.
     /// @param propertyAddress The address of the deployed LifeEstateNFT contract.
@@ -40,12 +40,11 @@ contract LifeEstateFactory is Ownable {
         uint256 _rooms,
         uint256 _bedRooms,
         string memory _cityLocation,
-        // string memory _countryLocation,
         bool _pool,
         bool _garage,
         bool _garden,
         string memory _uri
-    ) public returns (address) {
+    ) external returns (address) {
         LifeEstateNFT newLifeEstate = new LifeEstateNFT(
             _propertyName,
             _marketPrice,
@@ -53,7 +52,6 @@ contract LifeEstateFactory is Ownable {
             _rooms,
             _bedRooms,
             _cityLocation,
-            // _countryLocation,
             _pool,
             _garage,
             _garden,
@@ -65,6 +63,7 @@ contract LifeEstateFactory is Ownable {
         return address(newLifeEstate);
     }
 
+    ///todo: Security check the array length and change to onlyOwner
     /// @notice Initializes the parts of a LifeEstateNFT contract.
     /// @param newLifeEstate The address of the LifeEstateNFT to initialize.
     /// @param _partTotalSupplies An array of total supplies for each part.
@@ -73,14 +72,22 @@ contract LifeEstateFactory is Ownable {
         address newLifeEstate,
         uint256[] memory _partTotalSupplies,
         uint256[] memory _partPrices
-    ) public {
+    ) external {
         LifeEstateNFT newNFT = LifeEstateNFT(newLifeEstate);
         newNFT.setPartDetails(_partTotalSupplies, _partPrices);
     }
 
+    function initOwner(
+        address newOwner,
+        address newLifeEstate
+    ) external onlyOwner {
+        LifeEstateNFT newNFT = LifeEstateNFT(newLifeEstate);
+        newNFT.transferOwnership(newOwner);
+    }
+
     /// @notice Retrieves all LifeEstateNFT addresses deployed by this factory.
     /// @return array of addresses of all deployed LifeEstateNFT contracts.
-    function getAllLifeEstate() public view returns (address[] memory) {
+    function getAllLifeEstate() external view returns (address[] memory) {
         return LifeEstateAddresses;
     }
 
@@ -88,7 +95,7 @@ contract LifeEstateFactory is Ownable {
     /// @param _index The index of the LifeEstateNFT in the `LifeEstateAddresses` array.
     /// @return address of the LifeEstateNFT contract at the given index.
     /// @dev Reverts if the index is out of bounds of the `LifeEstateAddresses` array.
-    function getOneLifeEstate(uint256 _index) public view returns (address) {
+    function getOneLifeEstate(uint256 _index) external view returns (address) {
         require(_index < LifeEstateAddresses.length, "Index out of bounds");
         return LifeEstateAddresses[_index];
     }

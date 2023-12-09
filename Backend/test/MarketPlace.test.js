@@ -184,6 +184,42 @@ describe("listToken", function () {
 describe("buyListedToken", function () {
   //listindId its id of listings qui sera affiché dans le front
   //tokemAddress est l'address d'une [approveToken] (ERC20 Token)
+  it("should revert if listingID > listings.length", async function () {
+    const { lifeEstateMarketPlace, lifeEstateNFT, lusdt, owner } =
+      await loadFixture(deployAllContracts);
+    const tokenAmount = 200;
+
+    await lusdt.connect(owner).approve(lifeEstateNFT.target, tokenAmount);
+    await lifeEstateNFT.setApprovedTokens([lusdt.target], true);
+
+    await lifeEstateNFT.setApprovalForAll(lifeEstateMarketPlace.target, true);
+
+    await lifeEstateNFT.mintBuyToken(0, 2, lusdt.target);
+
+    await lifeEstateMarketPlace.listToken(0, 2, 100, lifeEstateNFT.target);
+
+    expect(
+      lifeEstateMarketPlace.buyListedToken(1, lusdt.target)
+    ).to.be.revertedWith("listingID does not exist");
+  });
+
+  it("should revert if listing.length = 0", async function () {
+    const { lifeEstateMarketPlace, lifeEstateNFT, lusdt, owner } =
+      await loadFixture(deployAllContracts);
+    const tokenAmount = 200;
+
+    await lusdt.connect(owner).approve(lifeEstateNFT.target, tokenAmount);
+    await lifeEstateNFT.setApprovedTokens([lusdt.target], true);
+
+    await lifeEstateNFT.setApprovalForAll(lifeEstateMarketPlace.target, true);
+
+    await lifeEstateNFT.mintBuyToken(0, 2, lusdt.target);
+
+    expect(
+      lifeEstateMarketPlace.buyListedToken(0, lusdt.target)
+    ).to.be.revertedWith("listingID does not exist");
+  });
+
   it("should revert if listingId is not valid", async function () {
     const { lifeEstateMarketPlace, lifeEstateNFT, lusdt, owner } =
       await loadFixture(deployAllContracts);
@@ -290,6 +326,32 @@ describe("buyListedToken", function () {
     //395 = 500 - (100 + 5%)
     expect(await lusdt.balanceOf(addr1.address)).to.equal(395);
   });
+
+  it("should emit TokenBought event", async function () {
+    const { lifeEstateMarketPlace, lifeEstateNFT, lusdt, owner, addr1 } =
+      await loadFixture(deployAllContracts);
+
+    const tokenAmount = 500;
+
+    await lusdt.connect(owner).transfer(addr1.address, tokenAmount);
+
+    await lusdt.connect(owner).approve(lifeEstateNFT.target, tokenAmount);
+    await lifeEstateNFT.setApprovedTokens([lusdt.target], true);
+
+    await lifeEstateNFT.setApprovalForAll(lifeEstateMarketPlace.target, true);
+    await lusdt
+      .connect(addr1)
+      .approve(lifeEstateMarketPlace.target, tokenAmount);
+    await lifeEstateNFT.mintBuyToken(0, 2, lusdt.target);
+
+    await lifeEstateMarketPlace.listToken(0, 2, 100, lifeEstateNFT.target);
+
+    await expect(
+      lifeEstateMarketPlace.connect(addr1).buyListedToken(0, lusdt.target)
+    )
+      .to.emit(lifeEstateMarketPlace, "TokenBought")
+      .withArgs(0, 2, 100);
+  });
   it("should delete the listed token from listings", async function () {
     const { lifeEstateMarketPlace, lifeEstateNFT, lusdt, owner, addr1 } =
       await loadFixture(deployAllContracts);
@@ -318,12 +380,14 @@ describe("buyListedToken", function () {
 
     await lifeEstateMarketPlace.connect(addr1).buyListedToken(0, lusdt.target);
 
-    const structListing = await lifeEstateMarketPlace.listings(0);
+    // const structListing = await lifeEstateMarketPlace.listings(0);
 
-    expect(structListing.tokenId).to.be.equal(0);
-    expect(structListing.amount).to.be.equal(0);
-    expect(structListing.price).to.be.equal(0);
-    expect(structListing.active).to.be.equal(false);
+    // expect(structListing.tokenId).to.be.equal(0);
+    // expect(structListing.amount).to.be.equal(0);
+    // expect(structListing.price).to.be.equal(0);
+    // expect(structListing.active).to.be.equal(false);
+    // expect(listingsArray to be length = 0);
+    expect(await lifeEstateMarketPlace.listingCounter()).to.be.equal(0);
   });
 });
 describe("cancelListing", function () {
@@ -347,7 +411,28 @@ describe("cancelListing", function () {
       lifeEstateMarketPlace.connect(addr1).cancelListing(0)
     ).to.be.revertedWith("Only the seller can cancel a listing");
   });
-  it("should set listing.active is false", async function () {
+  // it("should set listing.active is false", async function () {
+  //   const { lifeEstateMarketPlace, lifeEstateNFT, lusdt, owner } =
+  //     await loadFixture(deployAllContracts);
+
+  //   const tokenAmount = 500;
+
+  //   await lusdt.connect(owner).approve(lifeEstateNFT.target, tokenAmount);
+  //   await lifeEstateNFT.setApprovedTokens([lusdt.target], true);
+
+  //   await lifeEstateNFT.setApprovalForAll(lifeEstateMarketPlace.target, true);
+  //   await lifeEstateNFT.mintBuyToken(0, 2, lusdt.target);
+
+  //   await lifeEstateMarketPlace.listToken(0, 2, 100, lifeEstateNFT.target);
+
+  //   await lifeEstateMarketPlace.cancelListing(0);
+
+  //   const structListing = await lifeEstateMarketPlace.listings(0);
+
+  //   expect(structListing.active).to.be.equal(false);
+  // });
+
+  it("should set listing counter to 0 when canceling the last listing", async function () {
     const { lifeEstateMarketPlace, lifeEstateNFT, lusdt, owner } =
       await loadFixture(deployAllContracts);
 
@@ -363,10 +448,9 @@ describe("cancelListing", function () {
 
     await lifeEstateMarketPlace.cancelListing(0);
 
-    const structListing = await lifeEstateMarketPlace.listings(0);
-
-    expect(structListing.active).to.be.equal(false);
+    expect(await lifeEstateMarketPlace.listingCounter()).to.be.equal(0);
   });
+
   it("should emit TokenListingRemoved event", async function () {
     const { lifeEstateMarketPlace, lifeEstateNFT, lusdt, owner } =
       await loadFixture(deployAllContracts);
@@ -437,5 +521,66 @@ describe("withdrawFunds", function () {
     await expect(lifeEstateMarketPlace.connect(owner).withdrawFunds())
       .to.emit(lifeEstateMarketPlace, "FundsWithdrawn")
       .withArgs(owner.address, 500);
+  });
+});
+
+describe("getAllListings", function () {
+  it("should return all listings", async function () {
+    const { lifeEstateMarketPlace, lifeEstateNFT, lusdt, owner, addr1 } =
+      await loadFixture(deployAllContracts);
+    const tokenAmount = 500;
+
+    await lusdt.connect(owner).transfer(addr1.address, tokenAmount);
+
+    await lusdt.connect(owner).approve(lifeEstateNFT.target, tokenAmount);
+    await lusdt.connect(addr1).approve(lifeEstateNFT.target, tokenAmount);
+
+    await lifeEstateNFT.setApprovedTokens([lusdt.target], true);
+
+    await lifeEstateNFT.setApprovalForAll(lifeEstateMarketPlace.target, true);
+
+    await lifeEstateNFT.mintBuyToken(0, 2, lusdt.target);
+    await lifeEstateNFT.mintBuyToken(1, 2, lusdt.target);
+
+    await lifeEstateMarketPlace.listToken(0, 2, 100, lifeEstateNFT.target);
+    await lifeEstateMarketPlace.listToken(1, 2, 100, lifeEstateNFT.target);
+
+    const allListings = await lifeEstateMarketPlace.getAllListings();
+
+    expect(allListings.length).to.be.equal(2);
+  });
+  it("should return all listings with the right values", async function () {
+    const { lifeEstateMarketPlace, lifeEstateNFT, lusdt, owner, addr1 } =
+      await loadFixture(deployAllContracts);
+    const tokenAmount = 500;
+
+    await lusdt.connect(owner).transfer(addr1.address, tokenAmount);
+
+    await lusdt.connect(owner).approve(lifeEstateNFT.target, tokenAmount);
+    await lusdt.connect(addr1).approve(lifeEstateNFT.target, tokenAmount);
+
+    await lifeEstateNFT.setApprovedTokens([lusdt.target], true);
+
+    await lifeEstateNFT.setApprovalForAll(lifeEstateMarketPlace.target, true);
+
+    await lifeEstateNFT.mintBuyToken(0, 2, lusdt.target);
+    await lifeEstateNFT.mintBuyToken(1, 2, lusdt.target);
+
+    await lifeEstateMarketPlace.listToken(0, 2, 100, lifeEstateNFT.target);
+    await lifeEstateMarketPlace.listToken(1, 2, 100, lifeEstateNFT.target);
+
+    const allListings = await lifeEstateMarketPlace.getAllListings();
+
+    expect(allListings[0].tokenId).to.be.equal(0);
+    expect(allListings[0].amount).to.be.equal(2);
+    expect(allListings[0].price).to.be.equal(100);
+    expect(allListings[0].active).to.be.equal(true);
+    expect(allListings[0].newLifeEstate).to.be.equal(lifeEstateNFT.target);
+
+    expect(allListings[1].tokenId).to.be.equal(1);
+    expect(allListings[1].amount).to.be.equal(2);
+    expect(allListings[1].price).to.be.equal(100);
+    expect(allListings[1].active).to.be.equal(true);
+    expect(allListings[1].newLifeEstate).to.be.equal(lifeEstateNFT.target);
   });
 });

@@ -1,10 +1,6 @@
 "use client";
 
-import BuyBtn from "../Button/buyBtn";
-import SellBtn from "../Button/sellBtn";
 import ConnectionBtn from "../Button/connectionBtn";
-import MintBtn from "../Button/mintBtn";
-import SubmitBtn from "../Button/submitButton";
 
 export default function Header() {
   return (

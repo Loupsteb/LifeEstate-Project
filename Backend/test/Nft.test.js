@@ -61,6 +61,7 @@ async function deployAllContracts() {
     addr2,
     lifeEstateFactory,
     lifeEstateMarketPlace,
+    LifeEstateNFT,
     lifeEstateNFT,
     lusdt,
   };
@@ -148,6 +149,30 @@ describe("deploy NFT constructor", function () {
     expect(estateSpecs.garage).to.equal(true);
     expect(estateSpecs.garden).to.equal(true);
     expect(estateSpecs.uri).to.equal("https://example.com/nft");
+  });
+});
+
+describe("transferOwnership", function () {
+  it("should revert if the caller is not the owner", async function () {
+    const { LifeEstateNFT, lifeEstateNFT, addr1 } = await loadFixture(
+      deployAllContracts
+    );
+
+    await expect(
+      lifeEstateNFT.connect(addr1).transferOwnership(addr1.address)
+    ).to.be.revertedWithCustomError(
+      LifeEstateNFT,
+      "OwnableUnauthorizedAccount"
+    );
+  });
+  it("should set the new owner at the owner of the nft", async function () {
+    const { LifeEstateNFT, lifeEstateNFT, owner, addr1 } = await loadFixture(
+      deployAllContracts
+    );
+
+    await lifeEstateNFT.connect(owner).transferOwnership(addr1.address);
+
+    expect(await lifeEstateNFT.owner()).to.equal(addr1.address);
   });
 });
 
@@ -305,6 +330,20 @@ describe("setApprovedTokens", async function () {
     await lifeEstateNFT.connect(owner).setApprovedTokens([lusdtAddress], true);
 
     expect(await lifeEstateNFT.approvedTokens(lusdtAddress)).to.equal(true);
+  });
+  it("should push token address in approvedTokenArray", async function () {
+    const { lifeEstateNFT, lusdt, owner } = await loadFixture(
+      deployAllContractsWithAlifeEstate
+    );
+
+    const lusdtAddress = lusdt.target;
+    const daiAddress = "0x6B175474E89094C44Da98b954EedeAC495271d0F";
+
+    await lifeEstateNFT
+      .connect(owner)
+      .setApprovedTokens([lusdtAddress, daiAddress], true);
+
+    expect(await lifeEstateNFT.approvedTokens(daiAddress)).to.equal(true);
   });
 });
 

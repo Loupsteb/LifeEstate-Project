@@ -17,18 +17,6 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 contract LifeEstateMarketPlace is ERC1155Holder, Ownable, ReentrancyGuard {
-    // Reference to the NFT contract with which this marketplace interacts.
-    IERC1155 public lifeEstateNFT;
-
-    // The fee percentage that the marketplace charges for every transaction.
-    uint256 public operationFee = 5;
-
-    // An array of ERC20 token addresses that are approved for use in the marketplace.
-    address[] public approvedTokens;
-
-    // A counter to keep track of the number of listings.
-    uint256 private listingCounter;
-
     // A struct representing a listing for an NFT on the marketplace.
     struct Listing {
         address seller; // The address of the seller.
@@ -39,8 +27,23 @@ contract LifeEstateMarketPlace is ERC1155Holder, Ownable, ReentrancyGuard {
         address newLifeEstate; // The address of the specific LifeEstate NFT contract.
     }
 
+    // Reference to the NFT contract with which this marketplace interacts.
+    IERC1155 private lifeEstateNFT;
+
+    // The fee percentage that the marketplace charges for every transaction.
+    uint256 private operationFee = 5;
+
+    // A counter to keep track of the number of listings.
+    uint256 public listingCounter;
+
+    LifeEstateFactory public factory;
+
+    // An array of ERC20 token addresses that are approved for use in the marketplace.
+    address[] public approvedTokens;
+
     // Mapping from listing ID to the listing struct, storing details of the listing.
-    mapping(uint256 => Listing) public listings;
+    // mapping(uint256 => Listing) public listings;
+    Listing[] public listings;
 
     // Events
     event TokenListingCreated(
@@ -60,6 +63,8 @@ contract LifeEstateMarketPlace is ERC1155Holder, Ownable, ReentrancyGuard {
         factory = LifeEstateFactory(_factoryAddress);
     }
 
+    ///Security check size of listings (limit the size or implement pagination)
+    ///At the moment use of the array is safe because the seller will have to buy lot of tokens before
     /**
      * @notice Creates a listing for a token.
      * @dev Requires approval from the token owner for the marketplace to manage their tokens.
@@ -75,7 +80,7 @@ contract LifeEstateMarketPlace is ERC1155Holder, Ownable, ReentrancyGuard {
         uint256 amount,
         uint256 price,
         address newLifeEstate
-    ) public {
+    ) external {
         LifeEstateNFT propertyToSale = LifeEstateNFT(newLifeEstate);
         require(
             propertyToSale.isApprovedForAll(msg.sender, address(this)),
@@ -86,7 +91,7 @@ contract LifeEstateMarketPlace is ERC1155Holder, Ownable, ReentrancyGuard {
             "Not enough tokens owned to list"
         );
 
-        listings[listingCounter] = Listing(
+        Listing memory newlisting = Listing(
             msg.sender,
             tokenId,
             amount,
@@ -94,6 +99,9 @@ contract LifeEstateMarketPlace is ERC1155Holder, Ownable, ReentrancyGuard {
             true,
             newLifeEstate
         );
+
+        listings.push(newlisting);
+
         listingCounter += 1;
 
         emit TokenListingCreated(tokenId, amount, price);
@@ -108,7 +116,11 @@ contract LifeEstateMarketPlace is ERC1155Holder, Ownable, ReentrancyGuard {
     function buyListedToken(
         uint256 listingID,
         address tokenAddress
-    ) public nonReentrant {
+    ) external nonReentrant {
+        uint256 listingLength = listings.length;
+
+        require(listingID < listingLength, "listingID does not exist");
+
         Listing storage listing = listings[listingID];
         require(listing.active, "Token not listed for sale");
 
@@ -140,24 +152,50 @@ contract LifeEstateMarketPlace is ERC1155Holder, Ownable, ReentrancyGuard {
         //Transfert the cash from the buyer to the seller
         token.transferFrom(msg.sender, listing.seller, totalPrice);
 
-        delete listings[listingID];
+        uint256 listPrice = listing.price;
 
-        emit TokenBought(tokenId, amount, listing.price);
+        // delete listings[listingID];
+
+        Listing memory lastListing = listings[listings.length - 1];
+
+        listings[listingID] = lastListing;
+
+        listings.pop();
+
+        listingCounter -= 1;
+
+        emit TokenBought(tokenId, amount, listPrice);
     }
 
     /**
      * @notice Cancels a token listing if the caller is the seller.
-     * @param tokenId The ID of the token listing to cancel.
+     * @param listingID The ID of the token listing to cancel.
      */
-    function cancelListing(uint256 tokenId) public {
-        Listing storage listing = listings[tokenId];
+    function cancelListing(uint256 listingID) external {
+        uint256 listingLength = listings.length;
+
+        require(listingID < listingLength, "listingID does not exist");
+
         require(
-            listing.seller == msg.sender,
+            listings[listingID].seller == msg.sender,
             "Only the seller can cancel a listing"
         );
-        listing.active = false;
 
-        emit TokenListingRemoved(tokenId);
+        require(listingLength > 0, "No listing available");
+
+        Listing memory lastListing = listings[listings.length - 1];
+
+        listings[listingID] = lastListing;
+
+        listings.pop();
+
+        listingCounter -= 1;
+
+        emit TokenListingRemoved(listingID);
+    }
+
+    function getAllListings() external view returns (Listing[] memory) {
+        return listings;
     }
 
     /**
@@ -171,7 +209,7 @@ contract LifeEstateMarketPlace is ERC1155Holder, Ownable, ReentrancyGuard {
     /**
      * @notice Withdraws the funds accumulated from sales to the contract owner's address.
      */
-    function withdrawFunds() public onlyOwner {
+    function withdrawFunds() external onlyOwner {
         for (uint256 i = 0; i < approvedTokens.length; i++) {
             ERC20 token = ERC20(approvedTokens[i]);
             uint256 balance = token.balanceOf(address(this));
@@ -181,3 +219,94 @@ contract LifeEstateMarketPlace is ERC1155Holder, Ownable, ReentrancyGuard {
         }
     }
 }
+
+// function listToken(
+//     uint256 tokenId,
+//     uint256 amount,
+//     uint256 price,
+//     address newLifeEstate
+// ) external {
+//     LifeEstateNFT propertyToSale = LifeEstateNFT(newLifeEstate);
+//     require(
+//         propertyToSale.isApprovedForAll(msg.sender, address(this)),
+//         "Marketplace needs approval to manage tokens"
+//     );
+//     require(
+//         propertyToSale.balanceOf(msg.sender, tokenId) >= amount,
+//         "Not enough tokens owned to list"
+//     );
+
+//     listings[listingCounter] = Listing(
+//         msg.sender,
+//         tokenId,
+//         amount,
+//         price,
+//         true,
+//         newLifeEstate
+//     );
+//     listingCounter += 1;
+
+//     emit TokenListingCreated(tokenId, amount, price);
+// }
+// /**
+//  * @notice Allows a user to buy a token that has been listed in the marketplace.
+//  * @dev Ensures the transaction is not re-entrant.
+//  * @param listingID The ID of the listing to buy from.
+//  * @param tokenAddress The ERC20 token address to use for payment.
+//  */
+// function buyListedToken(
+//     uint256 listingID,
+//     address tokenAddress
+// ) external nonReentrant {
+//     Listing storage listing = listings[listingID];
+//     require(listing.active, "Token not listed for sale");
+
+//     uint256 tokenId = listing.tokenId;
+//     uint256 amount = listing.amount;
+
+//     uint256 price = listing.price;
+//     ERC20 token = ERC20(tokenAddress);
+//     uint256 fees = (price * operationFee) / 100;
+//     uint256 totalPrice = price + fees;
+//     require(
+//         token.balanceOf(msg.sender) >= totalPrice,
+//         "Not enough token balance"
+//     );
+
+//     LifeEstateNFT NftToBuy = LifeEstateNFT(listing.newLifeEstate);
+//     require(
+//         NftToBuy.balanceOf(listing.seller, tokenId) >= amount,
+//         "The seller do not have the same amount of token"
+//     );
+
+//     NftToBuy.safeTransferFrom(
+//         listing.seller,
+//         msg.sender,
+//         tokenId,
+//         amount,
+//         ""
+//     );
+//     //Transfert the cash from the buyer to the seller
+//     token.transferFrom(msg.sender, listing.seller, totalPrice);
+
+//     uint256 listPrice = listing.price;
+
+//     delete listings[listingID];
+
+//     emit TokenBought(tokenId, amount, listPrice);
+// }
+
+// /**
+//  * @notice Cancels a token listing if the caller is the seller.
+//  * @param tokenId The ID of the token listing to cancel.
+//  */
+// function cancelListing(uint256 tokenId) external {
+//     Listing storage listing = listings[tokenId];
+//     require(
+//         listing.seller == msg.sender,
+//         "Only the seller can cancel a listing"
+//     );
+//     listing.active = false;
+
+//     emit TokenListingRemoved(tokenId);
+// }
