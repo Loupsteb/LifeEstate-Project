@@ -12,6 +12,6 @@ contract LoupUSDT is ERC20 {
     constructor() ERC20("LoupUSDT", "LUSDT") {
         // Mint a fixed amount of LoupUSDT tokens (1 million) to the deployer
         // Note: The total supply is set arbitrarily for testing purposes
-        _mint(msg.sender, 1000000 * 10 ** decimals());
+        _mint(msg.sender, 100000000000 * 10 ** decimals());
     }
 }

@@ -32,10 +32,13 @@ contract LifeEstateNFT is ERC1155, Ownable {
         string uri;
     }
 
+    /// @dev Address where the contract's funds are stored
+    address payable private treasuryAddress;
+
     EstateSpecs public estateSpecs;
 
-    /// @dev Address where the contract's funds are stored
-    address payable public treasuryAddress;
+    /// @dev Just declare the maximum part ID as a constant
+    uint256 public constant PARTMAX_ID = 10;
 
     /// @dev A flag indicating if the contract's parts have been initialized
     bool public initialized = false;
@@ -46,8 +49,9 @@ contract LifeEstateNFT is ERC1155, Ownable {
     /// @dev Mapping to store an ERC20 token is approved for minting parts
     mapping(address => bool) public approvedTokens;
 
-    /// @dev Just declare the maximum part ID as a constant
-    uint256 public constant PARTMAX_ID = 10;
+    //Temporaly to simplify the frontend treatment : will replace the mapping after refactoring
+    /// @dev Array of approved ERC20 tokens
+    address[] public approvedTokensArray;
 
     /// @notice Events for various actions within the contract
     event PartSet(uint256 indexed partId, uint256 mintSupply, uint256 price);
@@ -70,7 +74,6 @@ contract LifeEstateNFT is ERC1155, Ownable {
     /// @param _rooms The number of rooms in the property
     /// @param _bedRooms The number of bedrooms in the property
     /// @param _cityLocation The city where the property is located
-    /// @param _countryLocation The country where the property is located
     /// @param _pool Whether the property has a pool
     /// @param _garage Whether the property has a garage
     /// @param _garden Whether the property has a garden
@@ -104,6 +107,13 @@ contract LifeEstateNFT is ERC1155, Ownable {
         estateSpecs = _estateSpecs;
     }
 
+    /// @notice Transfers the ownership of the contract to a new address
+    /// @dev Overrides the transferOwnership function from Ownable to transfer all tokens to the new owner
+    function transferOwnership(address newOwner) public override onlyOwner {
+        // super._transfer(owner(), newOwner, balanceOf(owner()));
+        super.transferOwnership(newOwner);
+    }
+
     /// @notice Initializes the parts with their total supplies and prices
     /// @dev Sets the part details for all parts at once, marking the contract as initialized
     /// @param _partTotalSupplies An array of the total supply for each part
@@ -112,7 +122,7 @@ contract LifeEstateNFT is ERC1155, Ownable {
     function setPartDetails(
         uint256[] memory _partTotalSupplies,
         uint256[] memory _partPrices
-    ) public onlyOwner {
+    ) external onlyOwner {
         require(!initialized, "Parts are already initialized");
         require(
             _partTotalSupplies.length == _partPrices.length &&
@@ -137,14 +147,14 @@ contract LifeEstateNFT is ERC1155, Ownable {
     /// @return EstateShare memory The details of the specified part
     function getEstateShare(
         uint256 partId
-    ) public view returns (EstateShare memory) {
+    ) external view returns (EstateShare memory) {
         return parts[partId];
     }
 
     /// @notice Retrieves all the information of the estate specifications
     /// @dev View function to get details from the estateSpecs struct
     /// @return estateSpecs memory The details of the estate specifications
-    function getEstateSpecs() public view returns (EstateSpecs memory) {
+    function getEstateSpecs() external view returns (EstateSpecs memory) {
         return estateSpecs;
     }
 
@@ -155,10 +165,11 @@ contract LifeEstateNFT is ERC1155, Ownable {
     function setApprovedTokens(
         address[] memory tokenAddresses,
         bool isApproved
-    ) public onlyOwner {
+    ) external onlyOwner {
         uint256 arrayLength = tokenAddresses.length;
         for (uint256 i = 0; i < arrayLength; i++) {
             approvedTokens[tokenAddresses[i]] = isApproved;
+            approvedTokensArray.push(tokenAddresses[i]);
         }
     }
 
@@ -171,7 +182,7 @@ contract LifeEstateNFT is ERC1155, Ownable {
         uint256 partId,
         uint256 amount,
         address tokenAddress
-    ) public {
+    ) external {
         require(approvedTokens[tokenAddress], "Token not approved");
         IERC20 token = IERC20(tokenAddress);
         uint256 totalPrice = amount * parts[partId].price;
@@ -200,7 +211,7 @@ contract LifeEstateNFT is ERC1155, Ownable {
         uint256[] memory partIds,
         uint256[] memory amounts,
         address tokenAddress
-    ) public {
+    ) external {
         require(approvedTokens[tokenAddress], "Token not approved");
         IERC20 token = IERC20(tokenAddress);
         uint256 totalPrice = 0;

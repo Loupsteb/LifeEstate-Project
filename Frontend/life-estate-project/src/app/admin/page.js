@@ -1,13 +1,13 @@
 "use client";
 
-import Header from "../components/Header/header";
-import FormEstate from "../admin/form";
+import Form from "./form";
 
 export default function Home() {
   return (
     <>
-      <Header />
-      <FormEstate />
+      <div className="flex items-center justify-center space-x-2">
+        <Form />
+      </div>
     </>
   );
 }

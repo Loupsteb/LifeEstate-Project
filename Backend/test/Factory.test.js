@@ -8,17 +8,21 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
 async function deployContract() {
-  const [owner] = await ethers.getSigners();
+  const [owner, addr1] = await ethers.getSigners();
 
   const LifeEstateFactory = await ethers.getContractFactory(
     "LifeEstateFactory"
   );
   const lifeEstateFactory = await LifeEstateFactory.deploy();
 
+  const LifeEstateNFT = await ethers.getContractFactory("LifeEstateNFT");
+
   return {
     owner,
+    addr1,
     LifeEstateFactory,
     lifeEstateFactory,
+    LifeEstateNFT,
   };
 }
 
@@ -105,6 +109,116 @@ describe("LifeEstateFactory", function () {
       expect(parseInt(partStruc.price.toString(), 10)).to.equal(100);
     });
   });
+
+  describe("initOwner", function () {
+    it("should revert if the caller is not the owner", async function () {
+      const {
+        lifeEstateFactory,
+        LifeEstateNFT,
+        LifeEstateFactory,
+        owner,
+        addr1,
+      } = await deployContract();
+
+      const tx = await lifeEstateFactory.deployLifeEstate(
+        "Chez Jojo",
+        1500000,
+        650,
+        10,
+        4,
+        "Sete",
+        true,
+        true,
+        true,
+        "https://www.google.com"
+      );
+
+      await tx.wait();
+
+      const nftAddress = await lifeEstateFactory.getOneLifeEstate(0);
+
+      const nftDeploy = await ethers.getContractAt("LifeEstateNFT", nftAddress);
+
+      await expect(
+        lifeEstateFactory.connect(addr1).initOwner(addr1.address, nftAddress)
+      ).to.be.revertedWithCustomError(
+        LifeEstateFactory,
+        "OwnableUnauthorizedAccount"
+      );
+    });
+    it("should set the newOwner as owner of the nft", async function () {
+      const {
+        lifeEstateFactory,
+        LifeEstateNFT,
+        LifeEstateFactory,
+        owner,
+        addr1,
+      } = await deployContract();
+
+      const tx = await lifeEstateFactory.deployLifeEstate(
+        "Chez Jojo",
+        1500000,
+        650,
+        10,
+        4,
+        "Sete",
+        true,
+        true,
+        true,
+        "https://www.google.com"
+      );
+
+      await tx.wait();
+
+      const nftAddress = await lifeEstateFactory.getOneLifeEstate(0);
+
+      const nftDeploy = await ethers.getContractAt("LifeEstateNFT", nftAddress);
+
+      await lifeEstateFactory.initOwner(addr1.address, nftAddress);
+
+      const nftOwner = await nftDeploy.owner();
+
+      expect(nftOwner).to.equal(addr1.address);
+    });
+    it("should let admin to call the function of the nft as the owner", async function () {
+      const {
+        lifeEstateFactory,
+        LifeEstateNFT,
+        LifeEstateFactory,
+        owner,
+        addr1,
+      } = await deployContract();
+
+      const tx = await lifeEstateFactory.deployLifeEstate(
+        "Chez Jojo",
+        1500000,
+        650,
+        10,
+        4,
+        "Sete",
+        true,
+        true,
+        true,
+        "https://www.google.com"
+      );
+
+      await tx.wait();
+
+      const nftAddress = await lifeEstateFactory.getOneLifeEstate(0);
+
+      const nftDeploy = await ethers.getContractAt("LifeEstateNFT", nftAddress);
+
+      await lifeEstateFactory.initOwner(addr1.address, nftAddress);
+
+      const LUSDT = await ethers.getContractFactory("LoupUSDT");
+      const lusdt = await LUSDT.deploy();
+
+      await nftDeploy.connect(addr1).setApprovedTokens([lusdt.target], true);
+
+      expect(await nftDeploy.approvedTokens(lusdt.target)).to.equal(true);
+    });
+  });
+
   describe("getAllLifeEstate", function () {
     it("should return an array of addresses", async function () {
       const { lifeEstateFactory } = await deployContract();
