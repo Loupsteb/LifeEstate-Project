@@ -2,6 +2,7 @@
 Ces modules étendent les fonctionnalités de Hardhat pour faciliter diverses tâches telles que 
 la gestion de la configuration, la génération de rapports de gaz et la couverture de code. */
 require("@nomicfoundation/hardhat-toolbox");
+require("@nomicfoundation/hardhat-ethers");
 require("dotenv/config");
 require("hardhat-gas-reporter");
 require("solidity-coverage");
@@ -16,6 +17,7 @@ avec des chaînes vides par défaut si elles ne sont pas fournies dans le fichie
 const SEPOLIA_RPC_URL = process.env.SEPOLIA_RPC_URL || "";
 const PRIVATE_KEY = process.env.PRIVATE_KEY || "";
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY || "";
+const SEED_PHRASE = process.env.SEED_PHRASE || "";
 
 module.exports = {
   // Spécifie le réseau par défaut pour Hardhat, qui est défini sur "hardhat".
@@ -24,6 +26,12 @@ module.exports = {
   // il y a un réseau "sepolia" (chaine de blocs fictive) et un réseau "localhost"
   // pour le développement en local.
   networks: {
+    hardhat: {
+      accounts: {
+        mnemonic: SEED_PHRASE,
+      },
+      chainId: 1337,
+    },
     sepolia: {
       url: SEPOLIA_RPC_URL,
       accounts: [`0x${PRIVATE_KEY}`],
@@ -31,7 +39,7 @@ module.exports = {
       blockConfirmations: 6,
     },
     localhost: {
-      url: "<http://127.0.0.1:8545>",
+      url: "http://127.0.0.1:8545",
       chainId: 31337,
     },
   },

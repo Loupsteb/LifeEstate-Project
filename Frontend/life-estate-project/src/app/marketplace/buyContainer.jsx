@@ -92,7 +92,8 @@ export default function BuyContainer({
       <h1 className="my-4 text-4xl text-center">Buy some tokens</h1>
       <div className="flex flex-wrap justify-around bg-color-red">
         {listedTokens.map((listedToken, index) => {
-          return <BuyCard key={index} listedToken={listedToken} />;
+          return <BuyCard key={index} listIndex={index}  listedToken={listedToken} />;
+          
         })}
       </div>
     </>

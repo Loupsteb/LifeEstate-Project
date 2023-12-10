@@ -8,8 +8,16 @@ import {
 } from "../../../../constant/marketPlaceConstant";
 
 import { useEffect } from "react";
+import { erc20Abi, nftAbi } from "../../../../constant/nftConstant";
 
-export default function AchatTokenBtn({ tokenId, propertyAddress }) {
+import { approvedTokens } from "../../../../constant/approvedToken";
+
+export default function AchatTokenBtn({
+  tokenId,
+  propertyAddress,
+  listIndex,
+  price,
+}) {
   const tokenIdNum = 0; //Number(tokenId);
   // const propertyAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
   const handleBuy = async () => {
@@ -21,6 +29,65 @@ export default function AchatTokenBtn({ tokenId, propertyAddress }) {
       "BUYBTN - Function_handleBuy - LOG PROPERTY ADRRESS:",
       propertyAddress
     );
+
+    try {
+      //on passe bien ici
+      console.log(
+        "BUYBTN - Function_SET_APPROVAL_TOKEN - TRY CATCH SET SET_APPROVAL_TOKEN FUNC - BEFORE:"
+      );
+      const { request } = await prepareWriteContract({
+        address: propertyAddress,
+        abi: nftAbi,
+        functionName: "setApprovalForAll",
+        args: [marketPlaceAddress, true],
+      });
+      //REquest retourne un array avec l'address du lifeEstate et non du token selectionné
+      console.log(
+        "BUYBTN - Function_SET_APPROVAL_TOKEN - TRY CATCH SET SET_APPROVAL_TOKEN FUNC PREPARE WRITE_:",
+        request
+      );
+      const { hash } = await writeContract(request);
+      //DERNIERE ETAPE DE VALIDE
+      console.log(
+        "BUYBTN - Function_SET_APPROVAL_TOKEN - TRY CATCH SET SET_APPROVAL_TOKEN FUNC- LOG HASH:",
+        hash
+      );
+    } catch (error) {
+      console.log(
+        "BUYBTN - Function_SET_APPROVAL_TOKEN - TRY CATCH SET SET_APPROVAL_TOKEN FUNC- LOG CATCH ERROR",
+        error
+      );
+    }
+
+    try {
+      //on passe bien ici
+      console.log(
+        "BUYBTN - Function_APPROVE_LUSDT - TRY CATCH SET Function_APPROVE_LUSDT - BEFORE:"
+      );
+      const { request } = await prepareWriteContract({
+        address: approvedTokens[0],
+        abi: erc20Abi,
+        functionName: "approve",
+        args: [marketPlaceAddress, price],
+      });
+      //REquest retourne un array avec l'address du lifeEstate et non du token selectionné
+      console.log(
+        "BUYBTN - Function_APPROVE_LUSDT - TRY CATCH SET Function_APPROVE_LUSDT :",
+        request
+      );
+      const { hash } = await writeContract(request);
+      //DERNIERE ETAPE DE VALIDE
+      console.log(
+        "BUYBTN - Function_APPROVE_LUSDT - TRY CATCH SET Function_APPROVE_LUSDT - LOG HASH:",
+        hash
+      );
+    } catch (error) {
+      console.log(
+        "BUYBTN - Function_APPROVE_LUSDT - TRY CATCH SET Function_APPROVE_LUSDT - LOG CATCH ERROR",
+        error
+      );
+    }
+
     try {
       //on passe bien ici
       console.log(
@@ -30,7 +97,7 @@ export default function AchatTokenBtn({ tokenId, propertyAddress }) {
         address: marketPlaceAddress,
         abi: marketAbi,
         functionName: "buyListedToken",
-        args: [tokenIdNum, propertyAddress],
+        args: [listIndex, approvedTokens[0]],
       });
       //REquest retourne un array avec l'address du lifeEstate et non du token selectionné
       console.log(

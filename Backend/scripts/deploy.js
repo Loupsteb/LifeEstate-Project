@@ -1,50 +1,22 @@
 const hre = require("hardhat");
+const ethers = hre.ethers;
 
 async function main() {
   const accounts = await ethers.getSigners();
 
-  const lifeEstateFactory = await hre.ethers.deployContract(
-    "LifeEstateFactory"
-  );
+  const networkName = hre.network.name;
+
+  const lifeEstateFactory = await ethers.deployContract("LifeEstateFactory");
 
   await lifeEstateFactory.waitForDeployment();
 
-  await lifeEstateFactory.connect(accounts[0]);
-
-  // const addressLifeEstateDeploy = await lifeEstateFactory.deployLifeEstate(
-  //   "Chez Jojo",
-  //   1500000,
-  //   650,
-  //   10,
-  //   4,
-  //   "Sete",
-  //   true,
-  //   true,
-  //   true,
-  //   "https://www.google.com"
-  // );
-
-  const lusdt = await hre.ethers.deployContract("LoupUSDT");
-  // const lusdt = await LUSDT.deploy();
-
-  await lusdt.waitForDeployment();
+  const lusdt = await ethers.deployContract("LoupUSDT");
 
   const lusdtAddress = lusdt.target;
 
-  // const addressArray = await lifeEstateFactory.getAllLifeEstate();
-
-  // const addressArrayLength = addressArray.length;
-
-  // const lastArrayAddress = await addressArray[addressArrayLength - 1];
-
-  // await lifeEstateFactory.initLifeEstateParts(
-  //   lastArrayAddress,
-  //   [10, 8, 4, 4, 4, 0, 0, 0, 0, 0, 0],
-  //   [444, 10, 22, 55, 8, 0, 0, 0, 0, 0, 0]
-  // );
   console.log(`LifeEstateFactory deployed to:, ${lifeEstateFactory.target}`);
 
-  const lifeEstateMarketPlace = await hre.ethers.deployContract(
+  const lifeEstateMarketPlace = await ethers.deployContract(
     "LifeEstateMarketPlace",
     [lifeEstateFactory.target]
   );
@@ -53,12 +25,11 @@ async function main() {
 
   console.log(
     `LifeEstateMarketPlace deployed to:, ${lifeEstateMarketPlace.target},
-    LUSDT address is ${lusdtAddress}`
+      LUSDT address is ${lusdtAddress}`
   );
   //Hardhat :
-  console.log(`Deployement Admin Address : ${accounts[0]}`);
-
-  console.log(`Buyer Address : ${accounts[1]}`);
+  console.log(`Deployement Admin Address : ${accounts[0].address}`);
+  console.log(`Buyer Address : ${accounts[1].address}`);
 
   //Testnet Sepolia :
   console.log(

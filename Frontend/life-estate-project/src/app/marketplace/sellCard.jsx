@@ -7,31 +7,42 @@ import SellBtn from "../components/Button/sellBtn";
 
 import { readContract } from "@wagmi/core";
 
-export default function SellCard(event) {
+export default function SellCard({ tokenInfo, index }) {
   const [propertyName, setPropertyName] = useState("Not Selected");
   const [amountToSell, setAmountToSell] = useState(0);
   const [priceToSell, setPriceToSell] = useState(0);
 
-  const propertyAddress = event.params.nftMintedAddress;
-  const owner = event.params.owner;
-  const partId = event.params.partId;
-  const amount = event.params.amount;
+  const { address: propertyAddress, tokens } = tokenInfo;
+
+  console.log("SELL CARD - INDEX", index);
+  console.log("SELL CARD - TOKEN INFO", tokenInfo);
+  // console.log("SELL CARD DEBUT - TOKEN INFO - ID", tokenInfo.tokens[index].id);
+
+  // const propertyAddress = event.params.nftMintedAddress; //ICI IL Y A UN PROBLEME
+  // const owner = tokenInfo.params.owner;
+  // const partId = tokenInfo.params.partId;
+  // const amount = tokenInfo.params.amount;
 
   //creer fomction pour fetcher property name avec un appel a la property address
   const fetchPropertyName = async () => {
     try {
-      console.log("FETCH PROPERTY SHARE", propertyName);
+      console.log(
+        "SELL CARD - FETCH READ GETESTATESPECS - VARIABLE PROPERTY ADDRESS",
+        propertyAddress
+      ); //Resultat undefined donc propertyAddress est undefined
+
       const data = await readContract({
         address: propertyAddress,
         abi: nftAbi,
         functionName: "getEstateSpecs",
         // args: [],
       });
-      console.log("FETCH PROPERTY SHARE - DATA", data);
+      console.log("SELL CARD - FETCH READ GETESTATESPECS - DATA", data);
       // setPropertyShares(parseInt(data.mintSupply.toString(), 10));
       setPropertyName(data.propertyName);
     } catch (error) {
-      console.log("erreur dans FETCH PROPERTY NAME", error);
+      //Missing or invalid parameters. / Double check you have provided the correct parameters.
+      console.log("SELL CARD - FETCH GETESTATESPECS - ERROR", error);
     }
   };
 
@@ -45,6 +56,11 @@ export default function SellCard(event) {
     //get property name
     console.log("SELL CARD _ USE EFFECT_SANS_event", event);
   }, []);
+
+  const convert = (num) => {
+    if (num) return parseInt(num.toString(), 10);
+    else return 0;
+  };
 
   return (
     <div className="max-w-sm mx-4 my-6 overflow-hidden rounded shadow-lg">
@@ -61,9 +77,11 @@ export default function SellCard(event) {
           <p className="text-base text-gray-700">
             Property Address: {propertyAddress}
           </p>
-          <p className="text-base text-gray-700">Owner: {owner}</p>
-          <p className="text-base text-gray-700">PartId: {partId}</p>
-          <p className="text-base text-gray-700">Amount: {amount}</p>
+          {/* <p className="text-base text-gray-700">Owner: {owner}</p> */}
+          <p className="text-base text-gray-700">PartId: {index}</p>
+          <p className="text-base text-gray-700">
+            Amount: {convert(tokenInfo.tokens[index].amount)}
+          </p>
         </div>
       </div>
       <div className="flex justify-around mb-1">
@@ -89,8 +107,8 @@ export default function SellCard(event) {
 
         <SellBtn
           propertyAddress={propertyAddress}
-          partId={partId}
-          amount={amount}
+          partId={index}
+          amount={tokenInfo.tokens[index].amount}
           amountToSell={amountToSell}
           priceToSell={priceToSell}
         />

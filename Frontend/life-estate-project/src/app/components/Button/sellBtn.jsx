@@ -15,6 +15,10 @@ export default function SellBtn({
   priceToSell,
   amountToSell,
 }) {
+  console.log(
+    `SELL BTN _ LOG DE VERIFpartId ${partId} - amount ${amount} - priceToSell ${priceToSell}`
+  );
+
   const handleSell = async () => {
     console.log(
       "SELL BTN - Function_HANDLESELL- LOG PROPERTY ADDRESS",
@@ -53,13 +57,21 @@ export default function SellBtn({
       console.log(
         "SELL BTN - PREPARE_WRITE - Function_HANDLESELL_LIST_TOKEN -"
       );
+
+      const partIdNumber = parseInt(partId.toString(), 10);
+      const amountNumber = parseInt(amount.toString(), 10);
+      const priceToSellNumber = parseInt(priceToSell.toString(), 10);
+      console.log(
+        `SELL BTN _ LOG DE VERIFpartId ${partId} - amount ${amount} - priceToSell ${priceToSell}`
+      );
+
       const { request } = await prepareWriteContract({
         address: marketPlaceAddress,
         abi: marketAbi,
         functionName: "listToken",
-        args: [partId, amountToSell, priceToSell, propertyAddress],
+        args: [partIdNumber, amountNumber, priceToSellNumber, propertyAddress],
       });
-      //ON ARRIVE JUSQUE ICI
+      //TypeError: Cannot convert undefined to a BigInt
       console.log(
         "SELL BTN - PREPARE_WRITE - Function_HANDLESELL_LIST_TOKEN - LOG REQUEST",
         request
@@ -71,7 +83,7 @@ export default function SellBtn({
         hash
       );
     } catch (error) {
-      // ICI ERREUR SUITE A SOUMISSION MINT
+      // ICI ERREUR SUITE A SOUMISSION de vente toString Cannot read properties of undefined (reading 'toString')
       console.log(
         "SELL BTN - WRITE - Function_HANDLESELL_LIST_TOKEN - LOG ERROR",
         error

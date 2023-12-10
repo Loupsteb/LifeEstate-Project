@@ -24,9 +24,10 @@ export default function MarketPlace() {
         functionName: "getAllLifeEstate",
       });
       setLifeEstateAddresses(data);
-      console.log("data", data);
+      console.log("MARKET PLACE_PAGE - READ GET ALL LIFE ESTATE - data", data);
     } catch (error) {
-      console.log("Error-call lifeEstateAddresses", error);
+      //Lors du clique sur LA : Error: The contract function "getAllLifeEstate" returned no data ("0x").
+      console.log("MARKET PLACE_PAGE - Error-call lifeEstateAddresses", error);
     }
   };
 

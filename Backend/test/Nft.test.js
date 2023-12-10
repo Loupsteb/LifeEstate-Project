@@ -610,6 +610,28 @@ describe("buyMultipleMintTokens", async function () {
   // });
 });
 
+describe("getTokensOf", async function () {
+  it("should return the tokens of the caller", async function () {
+    const { lifeEstateNFT, lusdt, owner, addr1 } = await loadFixture(
+      deployAllContractsWithAlifeEstate
+    );
+    const lusdtAddress = lusdt.target;
+
+    lifeEstateNFT.connect(owner).setApprovedTokens([lusdtAddress], true);
+    await lusdt.connect(owner).transfer(addr1, 2000000);
+    await lusdt.connect(addr1).approve(lifeEstateNFT.target, 2000000);
+
+    await lifeEstateNFT
+      .connect(addr1)
+      .buyMultipleMintTokens([0, 1], [100, 100], lusdtAddress);
+
+    const tokens = await lifeEstateNFT.getTokensOf(addr1.address);
+
+    expect(tokens[0]).to.equal(100);
+    expect(tokens[1]).to.equal(100);
+  });
+});
+
 describe("withdrawERC20", async function () {
   it("should revert if the caller is not the owner", async function () {
     const { lifeEstateNFT, lusdt, owner, addr1 } = await loadFixture(
