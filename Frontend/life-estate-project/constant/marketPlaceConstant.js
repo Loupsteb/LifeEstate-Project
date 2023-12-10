@@ -483,4 +483,4 @@ export const marketAbi = [
   },
 ];
 
-export const marketPlaceAddress = "0xF13d1377b4AE31804d01cB39f353F025C62EC250";
+export const marketPlaceAddress = "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0";

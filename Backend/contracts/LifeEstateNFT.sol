@@ -241,6 +241,16 @@ contract LifeEstateNFT is ERC1155, Ownable {
         // TODO: Add event emission for PartsMinted
     }
 
+    function getTokensOf(
+        address account
+    ) external view returns (uint256[] memory) {
+        uint256[] memory balances = new uint256[](PARTMAX_ID + 1);
+        for (uint256 i = 0; i <= PARTMAX_ID; i++) {
+            balances[i] = balanceOf(account, i);
+        }
+        return balances;
+    }
+
     /// @notice Withdraws the accumulated ERC20 tokens from the contract to the owner's address
     /// @dev Only the owner can call this function to transfer all balances of approved tokens
     /// @param tokenAddress The address of the ERC20 token to withdraw from the contract

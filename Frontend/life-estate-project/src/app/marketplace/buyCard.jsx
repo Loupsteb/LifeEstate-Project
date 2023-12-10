@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 import AchatTokenBtn from "../components/Button/achatTokenBtn";
 
-export default function BuyCard({ listedToken }) {
+export default function BuyCard({ listedToken, listIndex }) {
   const [propertyName, setPropertyName] = useState("Not Selected");
 
   const active = listedToken.active;
@@ -17,6 +17,7 @@ export default function BuyCard({ listedToken }) {
   //creer fomction pour fetcher property name avec un appel a la property address
   // const fetchPropertyName = async () => {};
   console.log("BUY CARD - LISTED TOKEN", listedToken);
+  console.log("BUY CARD - LIST INDEX", listIndex);
 
   // useEffect(() => {
   //   //get property name
@@ -52,7 +53,12 @@ export default function BuyCard({ listedToken }) {
         </div>
       </div>
       <div className="flex justify-around mb-1">
-        <AchatTokenBtn tokenId={tokenId} propertyAddress={propertyAddress} />
+        <AchatTokenBtn
+          listIndex={listIndex}
+          tokenId={tokenId}
+          propertyAddress={propertyAddress}
+          price={price}
+        />
       </div>
     </div>
   );
