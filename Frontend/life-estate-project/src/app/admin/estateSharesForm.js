@@ -9,12 +9,6 @@ import {
   lifeEstateFactoryAddress,
 } from "../../../constant/factoryConstant";
 
-// import {
-//   usePrepareContractWrite,
-//   useContractWrite,
-//   useWaitForTransaction,
-// } from "wagmi";
-
 import {
   watchContractEvent,
   prepareWriteContract,
@@ -25,7 +19,7 @@ import {
 import { usePublicClient, useAccount } from "wagmi";
 import { parseAbiItem } from "viem";
 
-export default function EstateShareForm({ estateAddress }) {
+export default function EstateShareForm({ estateAddress, isDeployed }) {
   const [partTotalSupplies, setPartTotalSupplies] = useState(Array(11).fill(0));
   const [partPrices, setPartPrices] = useState(Array(11).fill(0));
   const [lastPropertyAddress, setLastPropertyAddress] = useState();
@@ -34,48 +28,6 @@ export default function EstateShareForm({ estateAddress }) {
   const { address } = useAccount();
 
   console.log("ESTATE_SHARES_FORM - VARIABLE_estateAddress:", estateAddress);
-  //remplacer lifeEstateFactoryAddress par une chaine vide
-  // const {
-  //   config,
-  //   error: prepareError,
-  //   isError: isPrepareError,
-  // } = usePrepareContractWrite({
-  //   address: lifeEstateFactoryAddress,
-  //   abi: abi,
-  //   functionName: "initLifeEstateParts",
-  //   //ajouter l'addresse de la propriété
-  //   args: [lastPropertyAddress, [...partTotalSupplies], [...partPrices]],
-  // });
-
-  // tentative de lecture de l'event suite au deployEstate du compo estateSpecsForm
-  // const unwatch = watchContractEvent(
-  //   {
-  //     address: lifeEstateFactoryAddress,
-  //     abi: abi,
-  //     eventName: "LifeEstateDeployed",
-  //   },
-  //   (events) => {
-  //     console.log(
-  //       "EstateShareFOrmBefore - WatchContract-LifeEstateDeployed - lastPropertyAddress",
-  //       lastPropertyAddress
-  //     );
-  //     if (events.length > 0 && events[0].args) {
-  //       const propertyAddress = events[0].args.propertyAddress;
-  //       setLastPropertyAddress(propertyAddress);
-  //       console.log(
-  //         "ESTATE_SHARES_FORM - VARIABLE_After-lastPropertyAddress:",
-  //         lastPropertyAddress
-  //       );
-  //       console.log(
-  //         "ESTATE_SHARES_FORM - VARIABLE_After-propertyAddress:",
-  //         propertyAddress
-  //       );
-  //     }
-  //   }
-  // );
-
-  // La fonction initLifeEstatePartsFunc est appelé 2 fois alors qu'il n'y a qu'un click ca créé 2 une propriété, une qui à ses parts associés et l'autre
-  // non car les parts ont deja ete initialisé
 
   const initLifeEstatePartsFunc = async () => {
     try {
@@ -90,21 +42,17 @@ export default function EstateShareForm({ estateAddress }) {
         "ESTATE_SHARES_FORM -PREPARE-Function_initLifeEstatePartsFuncs - HASH:",
         hash
       );
-      //On passe bien l'addresse du contract terminant par aa3
-      //deuxieme call avec cette erreur: "message": "Error: VM Exception while processing transaction: reverted with reason string 'Parts are already initialized'"
+
       console.log(
         "ESTATE_SHARES_FORM -Function_initLifeEstatePartsFuncs - REQUEST:",
         request
       );
-      // return hash;
     } catch (error) {
       console.log(
         "ESTATE_SHARES_FORM - WRITE-Function_initLifeEstatePartsFuncs - ERROR:",
         error
       );
     }
-    //troisieme demande d interaction contrat et elle passe ! fonction initOwner avec address du connecté et nftAddress
-    // initOwner(lastPropertyAddress);
   };
 
   const initOwner = async (nftAddress) => {
@@ -124,12 +72,6 @@ export default function EstateShareForm({ estateAddress }) {
     }
   };
 
-  // const { data, write } = useContractWrite(config);
-
-  // const { isLoading, isSuccess } = useWaitForTransaction({
-  //   hash: data?.hash,
-  // });
-
   const handleSuppliesChange = (index, value) => {
     console.log("ESTATE_SHARES_FORM - handleSupplies Change - VALUE", value);
     const newSupplies = [...partTotalSupplies];
@@ -146,83 +88,11 @@ export default function EstateShareForm({ estateAddress }) {
 
   const handleSubmit = async () => {
     console.log("ESTATE_SHARES_FORM - handleSubmit:");
-    // e.preventDefault();
     initLifeEstatePartsFunc();
-    // await write?.();
   };
-
-  // useEffect(() => {
-  //   console.log("estateAddress", estateAddress);
-  //   setLastPropertyAddress(estateAddress);
-  // }, []);
 
   const client = usePublicClient();
 
-  // const getEvents = async () => {
-  //   console.log(
-  //     "ESTATE_SHARES_FORM -VARIABLE_: LIFE_ESTATE_FACTORY_ADDRESS",
-  //     lifeEstateFactoryAddress
-  //   );
-  //   console.log("EstateShareForm - GetEvents");
-  //   const getNftDeployed = client.getLogs({
-  //     address: lifeEstateFactoryAddress,
-  //     event: parseAbiItem(
-  //       "event LifeEstateDeployed(address indexed propertyAddress, string propertyName)"
-  //     ),
-  //     fromBlock: 0n,
-  //     toBlock: 1000n,
-  //   });
-
-  //   const [nftMintedLogs] = await Promise.all([getNftDeployed]);
-
-  //   console.log(
-  //     "EstateShareForm - GetEvents Promesses chargees",
-  //     nftMintedLogs
-  //   );
-
-  //   const nftAddedlength = nftMintedLogs.length;
-  //   console.log("EstateShareForm - GetEvents nftAddedlength", nftAddedlength);
-
-  //   const allTheNft = nftMintedLogs.map((nftAdded, index) => {
-  //     console.log(
-  //       "EstateShareForm - GetEvents ENTRE DANS LE MAPPING",
-  //       nftAdded
-  //     );
-
-  //     console.log("EstateSharefrom Index NFTADDEDLENGTH", index);
-
-  //     if (index === nftAddedlength - 1) {
-  //       setLastPropertyAddress(nftAdded.args.propertyAddress);
-  //     }
-
-  //     // const propertyAddress = parseInt(nftAdded.args.propertyAddress);
-
-  //     // const propertyName = parseInt(nftAdded.args.propertyName);
-  //     return {
-  //       propertyAddress: nftAdded.args.propertyAddress,
-  //       propertyName: nftAdded.args.propertyName,
-  //     };
-  //   });
-
-  //   setEvents(allTheNft);
-  // };
-
-  // useEffect(() => {
-  //   console.log("SELL CONTAINERS_ USE EFFEST events avec ALL THE NFT", events);
-  // }, [events]);
-
-  // useEffect(() => {
-  //   console.log("SellCOntainers - ENTRE DANS LE USE EFFECT");
-  //   const getAllEvents = async () => {
-  //     console.log("SellCOntainers - EVENT CALL DEPUIS USEEFFECT");
-  //     // if (address !== "undefined") {
-  //     await getEvents();
-  //     // }
-  //   };
-  //   getAllEvents();
-  // }, []);
-
-  //methode read du nft deployé
   const readNewNft = async () => {
     console.log(
       "EstateSharesForm - Function_READ LAST NFT - READ CONTRACT : JE RENTRE DS LE READ"
@@ -234,49 +104,61 @@ export default function EstateShareForm({ estateAddress }) {
         functionName: "getAllLifeEstate",
       });
       console.log(
-        //Valeur de l'address du caller
         "EstateSharesForm - Function_fetchListTokenLogs - READ CONTRACT : ARRAy_OF_ALL_LISTINGS",
         data
       );
       setLastPropertyAddress(data[data.length - 1]);
-      // setListedTokens(data);
     } catch (error) {
       console.log("EstateSharesForm - Function_READ LAST NFT : ERROR", error);
     }
   };
 
+  useEffect(() => {
+    if (isDeployed) {
+      readNewNft();
+    }
+  }, [isDeployed]);
+
   return (
     <div className="flex">
-      <form className="w-full max-w-3xl p-5 mx-auto">
-        <div>
-          {partTotalSupplies.map((share, index) => (
-            <div key={index}>
-              <div className="flex inline-flex flex-wrap w-full mb-4 md:w-1/2 md:pr-2">
+      <form className="w-full max-w-3xl p-5 mx-auto mt-3">
+        <div className="w-full mb-4">
+          {partTotalSupplies.map((supply, index) => (
+            <div key={index} className="flex flex-wrap mb-2">
+              <div className="w-1/2 pr-2">
                 <label className="block mb-2 text-sm font-bold text-gray-700">
                   Part {index + 1} Total Supply
                 </label>
                 <input
                   type="number"
+                  min="0"
                   name="partTotalSupplies"
-                  value={share.partTotalSupplies}
-                  onChange={(e) => handleSuppliesChange(index, e.target.value)}
+                  value={supply}
+                  onChange={(e) => {
+                    const selectedSupplies = Math.max(
+                      0,
+                      Number(e.target.value)
+                    );
+                    handleSuppliesChange(index, selectedSupplies);
+                  }}
                   placeholder="Total Supply"
                   className="w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline"
                 />
               </div>
-            </div>
-          ))}
-          {partPrices.map((share, index) => (
-            <div key={index}>
-              <div className="flex inline-flex flex-wrap w-full mb-4 md:w-1/2 md:pr-2">
+
+              <div className="w-1/2 pr-2">
                 <label className="block mb-2 text-sm font-bold text-gray-700">
                   Part {index + 1} Price Per Share
                 </label>
                 <input
                   type="number"
+                  min="0"
                   name="partPrices"
-                  value={share.partPrices}
-                  onChange={(e) => handlePricesChange(index, e.target.value)}
+                  value={partPrices[index]}
+                  onChange={(e) => {
+                    const selectedPrice = Math.max(0, Number(e.target.value));
+                    handlePricesChange(index, selectedPrice);
+                  }}
                   placeholder="Price Per Share"
                   className="w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline"
                 />
@@ -284,55 +166,29 @@ export default function EstateShareForm({ estateAddress }) {
             </div>
           ))}
         </div>
-        <button
-          disabled={!events}
-          onClick={(e) => {
-            e.preventDefault();
-            initLifeEstatePartsFunc();
-          }}
-        >
-          INIT SHARE
-        </button>
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            // getEvents();
-            readNewNft();
-          }}
-        >
-          Call Event
-        </button>
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            initOwner(lastPropertyAddress);
-          }}
-        >
-          INIT OWNER
-        </button>
-        {/* {isSuccess && (
-        <div>
-          Successfully submit the life estate specifications
-          <div>
-            <a href={`https://etherscan.io/tx/${data?.hash}`}>Etherscan</a>
-          </div>
+
+        <div className="flex flex-wrap justify-center gap-4">
+          <button
+            disabled={!events}
+            onClick={(e) => {
+              e.preventDefault();
+              initLifeEstatePartsFunc();
+            }}
+            className="px-4 py-2 text-black bg-gray-300 border border-transparent rounded-md shadow-sm hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2"
+          >
+            INIT SHARE
+          </button>
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              initOwner(lastPropertyAddress);
+            }}
+            className="px-4 py-2 text-black bg-gray-300 border border-transparent rounded-md shadow-sm hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2"
+          >
+            INIT OWNER
+          </button>
         </div>
-      )} */}
       </form>
     </div>
   );
-}
-
-{
-  /* <button disabled={!write || isLoading} onClick={() => write()}>
-        {isLoading ? "Submiting..." : "Submit"}
-      </button>
-      {isSuccess && (
-        <div>
-          Successfully submit the life estate specifications
-          <div>
-            <a href={`https://etherscan.io/tx/${data?.hash}`}>Etherscan</a>
-          </div>
-        </div>
-      )} */
 }

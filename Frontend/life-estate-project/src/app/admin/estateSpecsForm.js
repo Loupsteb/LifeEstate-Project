@@ -7,7 +7,6 @@ import {
   lifeEstateFactoryAddress,
 } from "../../../constant/factoryConstant";
 
-//test pr les deoubles appels
 import {
   usePrepareContractWrite,
   useContractWrite,
@@ -17,7 +16,7 @@ import {
 
 import { prepareWriteContract, writeContract } from "@wagmi/core";
 
-export default function EstateSpecsForm({ setEstateAddress }) {
+export default function EstateSpecsForm({ setEstateAddress, setIsDeployed }) {
   const [estateSpecs, setEstateSpecs] = useState({
     propertyName: "Property Name",
     marketPrice: 0,
@@ -30,34 +29,6 @@ export default function EstateSpecsForm({ setEstateAddress }) {
     garden: false,
     uri: "Uri Link",
   });
-
-  // const {
-  //   config,
-  //   error: prepareError,
-  //   isError: isPrepareError,
-  // } = usePrepareContractWrite({
-  //   address: lifeEstateFactoryAddress,
-  //   abi: abi,
-  //   functionName: "deployLifeEstate",
-  //   args: [
-  //     estateSpecs.propertyName,
-  //     estateSpecs.marketPrice,
-  //     estateSpecs.propertySurfaceInSquareMeters,
-  //     estateSpecs.rooms,
-  //     estateSpecs.bedRooms,
-  //     estateSpecs.cityLocation,
-  //     estateSpecs.pool,
-  //     estateSpecs.garage,
-  //     estateSpecs.garden,
-  //     estateSpecs.uri,
-  //   ],
-  // });
-
-  // const { data, write } = useContractWrite(config);
-
-  // const { isLoading, isSuccess } = useWaitForTransaction({
-  //   hash: data?.hash,
-  // });
 
   const deployEstate = async () => {
     try {
@@ -89,17 +60,11 @@ export default function EstateSpecsForm({ setEstateAddress }) {
         "ESTATE_SHARES_FORM -Function_DEPLOYESTATE - REQUEST:",
         request
       );
+      setIsDeployed(true);
     } catch (error) {
       console.log("ESTATE_SHARES_FORM -Function_DEPLOYESTATE - ERROR", error);
     }
   };
-
-  // const getDeployedEstateAddress = async () => {
-  //   try {
-  //   } catch (error) {
-  //     console.log("estateSpecForm - getDeployedAddress -error", error);
-  //   }
-  // };
 
   const handleEstateSpecsChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -118,106 +83,8 @@ export default function EstateSpecsForm({ setEstateAddress }) {
     deployEstate();
   };
 
-  // const config = await prepareWriteContract({
-  //   address: lifeEstateFactoryAddress,
-  //   abi: abi,
-  //   functionName: "deployLifeEstate",
-  //   args: [
-  //     estateSpecs.propertyName,
-  //     estateSpecs.marketPrice,
-  //     estateSpecs.propertySurfaceInSquareMeters,
-  //     estateSpecs.rooms,
-  //     estateSpecs.bedRooms,
-  //     estateSpecs.cityLocation,
-  //     estateSpecs.pool,
-  //     estateSpecs.garage,
-  //     estateSpecs.garden,
-  //     estateSpecs.uri,
-  //   ],
-  // });
-
-  // useEffect(() => {
-  //   console.log("beforeIsSuccess", isSuccess);
-  //   if (isSuccess) {
-  //     console.log("afterIsSuccess", isSuccess);
-  //     const fetchNewEstateAddress = async () => {
-  //       console.log("fetchNewEstateAddress");
-  //       try {
-  //         console.log("promiseAddress");
-  //         // const promiseAddress = async () => {
-  //         //   console.log("readContract");
-  //         //  return newAddress;
-  //         // };
-  //         const newEstate = new Promise(function myRead(resolve, reject) {
-  //           const newAddress = readContract({
-  //             address: lifeEstateFactoryAddress,
-  //             abi: abi,
-  //             functionName: "getOneLifeEstate",
-  //             args: [0],
-  //           });
-  //           resolve(newAddress);
-  //         });
-  //         // const resolve = await Promise.all([promiseAddress]);
-
-  //         console.log("newEstate", newEstate);
-  //         setEstateAddress(newEstate);
-  //         // setEstateSpecs((prevSpecs) => {
-  //         //   ...prevSpecs,
-  //         //   estateAddress: resolve,
-  //         // });
-  //       } catch (error) {
-  //         console.log("error", error);
-  //       }
-  //     };
-  //     fetchNewEstateAddress();
-  //   }
-  // }, [isSuccess]);
-
-  // useEffect(() => {
-  //   const fetchProposals = async () => {
-  //     try {
-  //       const indexes = Array.from(0);
-
-  //       console.log("entré ds le try");
-
-  //       const proposalPromises = async () => {
-  //         console.log("entré ds mapping");
-  //         const data = await readContract({
-  //           address: lifeEstateFactoryAddress,
-  //           abi: abi,
-  //           functionName: "getOneLifeEstate",
-  //           args: [0],
-  //         });
-  //         console.log("data", data);
-  //         return data;
-  //       };
-  //       console.log("proposalPromises", proposalPromises);
-  //       const proposals = await Promise.all([proposalPromises]);
-
-  //       console.log("proposals", proposals);
-
-  //       // setProposals(proposals);
-  //     } catch (error) {
-  //       console.error("Erreur lors de la lecture du contrat :", error);
-  //     }
-  //   };
-
-  //   fetchProposals();
-  // }, [isSuccess]);
-
-  // useEffect(() => {
-  //   console.log("prepareError", prepareError);
-  //   console.log("isPrepareError", isPrepareError);
-  //   console.log("config", config);
-  //   console.log("address factory", abi);
-  //   console.log("address factory", lifeEstateFactoryAddress);
-  //   console.log("EstateSpecs", estateSpecs);
-  //   console.log("Write", write);
-  //   console.log("isSuccess", isSuccess);
-  // }, []);
-
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-3xl p-5 mx-auto">
+    <form onSubmit={handleSubmit} className="max-w-3xl p-5 mx-auto ">
       <div className="mb-4">
         <label
           htmlFor="propertyName"
@@ -244,6 +111,7 @@ export default function EstateSpecsForm({ setEstateAddress }) {
         </label>
         <input
           type="number"
+          min="0"
           id="marketPrice"
           name="marketPrice"
           value={estateSpecs.marketPrice}
@@ -261,6 +129,7 @@ export default function EstateSpecsForm({ setEstateAddress }) {
         </label>
         <input
           type="number"
+          min="0"
           id="propertySurfaceInSquareMeters"
           name="propertySurfaceInSquareMeters"
           value={estateSpecs.propertySurfaceInSquareMeters}
@@ -278,6 +147,7 @@ export default function EstateSpecsForm({ setEstateAddress }) {
         </label>
         <input
           type="number"
+          min="0"
           id="rooms"
           name="rooms"
           value={estateSpecs.rooms}
@@ -295,6 +165,7 @@ export default function EstateSpecsForm({ setEstateAddress }) {
         </label>
         <input
           type="number"
+          min="0"
           id="bedRooms"
           name="bedRooms"
           value={estateSpecs.bedRooms}
@@ -378,32 +249,12 @@ export default function EstateSpecsForm({ setEstateAddress }) {
           />
         </div>
       </div>
-      <button onClick={handleSubmit}>
-        {/* {isLoading ? "Submiting..." : "Submit"} */}
+      <button
+        onClick={handleSubmit}
+        className="px-4 py-2 text-black bg-gray-300 border border-transparent rounded-md shadow-sm hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2"
+      >
         SUBMIT
       </button>
-      {/* {isSuccess && <div>Successfully submit a new life estate</div>} */}
     </form>
   );
 }
-
-// function gerWiningProposal(result: number) {
-//   const data: any = readContract({
-//     address: contractAddress,
-//     abi: abi,
-//     functionName: "getOneProposal",
-//     args: [result],
-//   });
-//   console.log("data", data);
-//   return data;
-// }
-
-// useEffect(() => {
-//   const myFunc = async () => {
-//     const result = await checkWiningProposal();
-//     setWinningProposalID(result);
-//     const data = await gerWiningProposal(result);
-//     setWinningProposal(data);
-//   };
-//   myFunc();
-// }, []);

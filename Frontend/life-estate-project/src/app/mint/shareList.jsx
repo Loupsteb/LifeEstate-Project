@@ -11,7 +11,6 @@ export default function ShareList({
   setPropertyShares,
   propertyShares,
 }) {
-  // const [propertyShares, setPropertyShares] = useState(Array(11).fill({}));
   const fetchPropertyShare = async (id) => {
     try {
       console.log("FETCJ PROPERTY SHARE", selectedEstate);
@@ -21,7 +20,6 @@ export default function ShareList({
         functionName: "getEstateShare",
         args: [id],
       });
-      // setPropertyShares(parseInt(data.mintSupply.toString(), 10));
       setPropertyShares((propertyShares) => {
         const oldShares = [...propertyShares];
         oldShares[id] = {
@@ -32,8 +30,6 @@ export default function ShareList({
         };
         return oldShares;
       });
-
-      console.log("ShareList DATA", data);
     } catch (error) {
       console.log("erreur dans SHARELIST", error);
     }
@@ -47,19 +43,42 @@ export default function ShareList({
 
   return (
     <>
-      <ul>
-        {propertyShares.map((propertyShare, index) => (
-          <li key={index}>
-            Share {index}:
-            <span>Avaible to mint: {propertyShare.mintSupply}</span>
-            <span>Mint price: {propertyShare.price}</span>
-            {/* <span>Mint totalSupply: {propertyShare.totalSupply}</span>
-            <span>
-              Mint circulatingSupply: {propertyShare.circulatingSupply}
-            </span> */}
-          </li>
-        ))}
-      </ul>
+      <div className="container mt-8 ms-2">
+        <ul className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {propertyShares.map((propertyShare, index) => {
+            if (propertyShare.mintSupply === 0 && propertyShare.price === 0) {
+              return null;
+            }
+
+            return (
+              <li
+                key={index}
+                className="flex flex-col items-start p-4 transition-shadow duration-200 bg-white rounded-lg shadow-lg hover:shadow-xl"
+              >
+                <span className="text-lg font-semibold text-gray-800">
+                  Share {index}
+                </span>
+                {propertyShare.mintSupply > 0 && (
+                  <span className="mt-2 text-sm text-gray-600">
+                    Available to mint:{" "}
+                    <strong className="font-semibold text-gray-800">
+                      {propertyShare.mintSupply}
+                    </strong>
+                  </span>
+                )}
+                {propertyShare.price > 0 && (
+                  <span className="mt-2 text-sm text-gray-600">
+                    Mint price:{" "}
+                    <strong className="font-semibold text-gray-800">
+                      {propertyShare.price}
+                    </strong>
+                  </span>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      </div>
     </>
   );
 }

@@ -24,9 +24,7 @@ export default function MarketPlace() {
         functionName: "getAllLifeEstate",
       });
       setLifeEstateAddresses(data);
-      console.log("MARKET PLACE_PAGE - READ GET ALL LIFE ESTATE - data", data);
     } catch (error) {
-      //Lors du clique sur LA : Error: The contract function "getAllLifeEstate" returned no data ("0x").
       console.log("MARKET PLACE_PAGE - Error-call lifeEstateAddresses", error);
     }
   };
@@ -35,41 +33,25 @@ export default function MarketPlace() {
     getLifeEstateAddresses();
   }, [address]);
 
-  /*  isBuyMarketP = true; lorsque le boutton achat est enfoncé et false lorsque
-le bouton vente est enfoncé: ca indique si on doit afficher sell buy container */
   const [isBuyMarket, setIsBuyMarket] = useState(true);
-
-  /*state pour stocker les listes.
-list nftToBuy et une listNftToSell ces tableaux et leur seter seront transmis
-au composant enfant associé*/
   const [nftToBuy, setNftToBuy] = useState([]);
   const [nftToSell, setNftToSell] = useState([]);
   const [lifeEstateAddresses, setLifeEstateAddresses] = useState(null);
-  /*buyContainer:
-on va appeler le tableau lifeEstateAddresses du contrat factory
-sur chacune de ces addresses on va ecouter l'event des tokens mintés, le resultat
-peremettra de remplir la liste des tokens a vendre
-ca afficher sous forme de carte les tokens a vendre avec l'apparition du bouton buy
-avec un map*/
-
-  /*sellContainer:
-on va appeler le tableau lifeEstateAddresses du contrat factory
-sur chaque addresse on va test si le sender est le owner du token, si oui il rentre
-dans la liste des nftToSell (possible de filter les events de mintToken pour voir si 
-  l'addresse du sender est le owner du token)*/
 
   return (
     <>
-      <div>
+      <div className="flex justify-around mt-5">
         <button
+          className="px-4 py-2 font-semibold bg-white border border-gray-400 shadow rounded-2xl hover:bg-green-200 active:bg-lime-100 focus:outline-none focus:ring focus:ring-green-100 "
           onClick={() => {
             setIsBuyMarket(true);
           }}
         >
           BUY SHARE
         </button>
-        <h1 className="my-4 text-4xl text-center bg-red-400">Market Place</h1>
+        <h1 className="my-4 text-4xl text-center">Market Place</h1>
         <button
+          className="px-4 py-2 font-semibold bg-white border border-gray-400 shadow rounded-2xl hover:bg-green-200 active:bg-lime-100 focus:outline-none focus:ring focus:ring-green-100 "
           onClick={() => {
             setIsBuyMarket(false);
           }}
@@ -77,9 +59,6 @@ dans la liste des nftToSell (possible de filter les events de mintToken pour voi
           SELL SHARE
         </button>
       </div>
-      {/* faire une div pour les boutons avec un ternaire: si isBuyMarketP affiche
-MarketPlaceCard sinon liste des tokens detenus a gauche un bouton achat a droite
-  un bouton vente */}
       {isBuyMarket ? (
         <BuyContainer />
       ) : (
@@ -89,9 +68,6 @@ MarketPlaceCard sinon liste des tokens detenus a gauche un bouton achat a droite
           lifeEstateAddresses={lifeEstateAddresses}
         />
       )}
-
-      {/* ira dans une container pour contextualiser l'affichage */}
-      {/* <MarketPlaceCard /> */}
     </>
   );
 }

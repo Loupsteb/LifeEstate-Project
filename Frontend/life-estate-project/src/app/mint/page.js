@@ -27,7 +27,6 @@ export default function Mint() {
   const [propertyShares, setPropertyShares] = useState(Array(11).fill({}));
   const [selectedApprovedToken, setSelectedApprovedToken] = useState("");
 
-  //recup le tableau des addresses des propriétés
   const getPropertyMint = async () => {
     try {
       const data = await readContract({
