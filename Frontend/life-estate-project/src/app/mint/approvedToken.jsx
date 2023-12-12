@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 
 import { approvedTokens } from "../../../constant/approvedToken";
 
-//Compo OK set correctement TOKEN avec l'address selectionné dans la liste
 export default function ApprovedToken({ setSelectedApprovedToken }) {
   const [tokens, setTokens] = useState([""]);
 
@@ -15,13 +14,13 @@ export default function ApprovedToken({ setSelectedApprovedToken }) {
         approvedTokens
       );
       setTokens(approvedTokens);
+      setSelectedApprovedToken(approvedTokens[0]);
     } catch (error) {
       console.log("APPROVED_TOKENS-Function_loadToken - ERROR", error);
     }
   };
 
   const handleSubmit = (event) => {
-    // event.preventDefault();
     setSelectedApprovedToken(event.target.value);
     console.log(
       "APPROVED_TOKENS - Function_HANDLESUBMIT - EVENT_TARGET_VALUE",

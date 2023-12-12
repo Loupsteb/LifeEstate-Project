@@ -134,10 +134,6 @@ export default function InputChoice({
         error
       );
     }
-
-    //faire le setApprovedToken de LUSDT comme l.56 de Test
-    //faire le approve de LUSDT comme l.64 de Test via un call writeContract
-    // if (!valideInput) return;
     try {
       console.log(
         "INPUT_CHOICES - Function_mintShares - BEFORE CALL PREAPREWRITE_MINT_BUY_TOKEN"
@@ -149,15 +145,7 @@ export default function InputChoice({
         functionName: "mintBuyToken",
         args: [shareId, numShares, selectedApprovedToken],
       });
-      console.log(
-        "INPUT_CHOICES - Function_mintShares - PREPARE-WRITE_MINT_BUY_TOKEN - LOG REQUEST",
-        request
-      );
       const { hash } = await writeContract(request);
-      console.log(
-        "INPUT_CHOICES - Function_mintShares - PREPARE-WRITE_MINT_BUY_TOKEN - LOG HASH",
-        hash
-      );
     } catch (error) {
       console.log(
         "INPUT_CHOICES - Function_mintShares - PREPARE-WRITE_MINT_BUY_TOKEN - LOG ERROR",
@@ -194,28 +182,37 @@ export default function InputChoice({
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col items-center space-y-1"
+      className="flex flex-col items-center max-w-md p-6 mx-auto space-y-4 bg-white rounded-lg shadow-lg h-13"
     >
-      <label className="flex items-center ">
-        Share ID:
-        <input
-          type="text"
-          value={shareId}
-          onChange={(e) => setShareId(e.target.value)}
-          className="ml-2"
-        />
-      </label>
-      <label className="flex items-center ">
-        Number of Shares:
-        <input
-          type="number"
-          value={numShares}
-          onChange={(e) => setNumShares(e.target.value)}
-          className="ml-2"
-        />
-      </label>
-      {/* <MintBtn onClick={mintShares} /> */}
-      <button disabled={!shareId || !numShares} onClick={handleSubmit}>
+      <div className="w-full">
+        <label className="block mb-2 text-sm font-medium text-gray-700">
+          Share ID:
+          <input
+            type="text"
+            value={shareId}
+            onChange={(e) => setShareId(e.target.value)}
+            className="block w-full p-2 mt-1 border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+            placeholder="Enter share ID"
+          />
+        </label>
+      </div>
+      <div className="w-full">
+        <label className="block mb-2 text-sm font-medium text-gray-700">
+          Number of Shares:
+          <input
+            type="number"
+            value={numShares}
+            onChange={(e) => setNumShares(e.target.value)}
+            className="block w-full p-2 mt-1 border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+            placeholder="Enter number of shares"
+          />
+        </label>
+      </div>
+      <button
+        type="submit"
+        disabled={!shareId || !numShares}
+        className="px-6 py-2 text-white transition duration-200 bg-blue-600 rounded-lg hover:bg-blue-700 disabled:bg-blue-300"
+      >
         MINT
       </button>
     </form>

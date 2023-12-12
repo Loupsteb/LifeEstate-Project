@@ -26,12 +26,12 @@ module.exports = {
   // il y a un réseau "sepolia" (chaine de blocs fictive) et un réseau "localhost"
   // pour le développement en local.
   networks: {
-    hardhat: {
-      accounts: {
-        mnemonic: SEED_PHRASE,
-      },
-      chainId: 1337,
-    },
+    // hardhat: {
+    //   accounts: {
+    //     mnemonic: SEED_PHRASE,
+    //   },
+    //   chainId: 1337,
+    // },
     sepolia: {
       url: SEPOLIA_RPC_URL,
       accounts: [`0x${PRIVATE_KEY}`],
