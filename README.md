@@ -4,10 +4,6 @@
 
 Ce projet a pour but de permettre de créer des nft représentant des biens immobiliers viagers et de les vendre sous forme de parts de type ERC1155. Chaque bien est indépendant et peut être vendu en totalité ou en partie a travers une phase de mint. Par la suite les possesseurs de parts peuvent les revendre sur le marché secondaire.
 
-# Lien Video Présentation
-
-https://www.loom.com/share/18cd68aafb744f50a13fd528160d2071?sid=e9e81a71-a841-4aef-83f1-88eaffd4c7e4
-
 ## Equipe
 Dévelopeur : Esteban Loup
 Consultants : Piazza Cedric - Segura Manuel - Dahbi Youssouf
