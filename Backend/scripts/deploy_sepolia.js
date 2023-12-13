@@ -16,19 +16,6 @@ async function main() {
 
     await lifeEstateFactory.connect(accounts[0]);
 
-    // const addressLifeEstateDeploy = await lifeEstateFactory.deployLifeEstate(
-    //   "Chez Jojo",
-    //   1500000,
-    //   650,
-    //   10,
-    //   4,
-    //   "Sete",
-    //   true,
-    //   true,
-    //   true,
-    //   "https://www.google.com"
-    // );
-
     const lusdt = await hre.ethers.deployContract("LoupUSDT");
     // const lusdt = await LUSDT.deploy();
 
@@ -36,27 +23,12 @@ async function main() {
 
     const lusdtAddress = lusdt.target;
 
-    // const addressArray = await lifeEstateFactory.getAllLifeEstate();
-
-    // const addressArrayLength = addressArray.length;
-
-    // const lastArrayAddress = await addressArray[addressArrayLength - 1];
-
-    // await lifeEstateFactory.initLifeEstateParts(
-    //   lastArrayAddress,
-    //   [10, 8, 4, 4, 4, 0, 0, 0, 0, 0, 0],
-    //   [444, 10, 22, 55, 8, 0, 0, 0, 0, 0, 0]
-    // );
     console.log(`LifeEstateFactory deployed to:, ${lifeEstateFactory.target}`);
 
     const lifeEstateMarketPlace = await hre.ethers.deployContract(
       "LifeEstateMarketPlace",
       [lifeEstateFactory.target]
     );
-
-    // const lifeEstateMarketPlace = await LifeEstateMarketPlace.deploy(
-    //   lifeEstateFactory.target
-    // );
 
     await lifeEstateMarketPlace.waitForDeployment();
 

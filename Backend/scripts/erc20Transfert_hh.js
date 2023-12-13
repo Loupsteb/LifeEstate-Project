@@ -8,23 +8,26 @@ async function main() {
 
   const deployedLUSDTAddress = "0x2B12a1FcCe88a379229991f40e012B3fE040aB4b";
 
+
   const networkName = hre.network.name;
   console.log(`Vous êtes connecté au réseau : ${networkName}`);
 
   if (networkName === "sepolia") {
     const acheteurAddress = "0x28588549098DB4ef87A21Dc85DCA159487778f8E";
-
+    console.log("on est ligne 16");
     const lusdt = await ethers.getContractAt("LoupUSDT", deployedLUSDTAddress);
     await lusdt.deploymentTransaction();
     console.log("LoupUSDT BUG ?:", lusdt);
+    console.log("on est ligne 20");
 
     const tokenAmount = 19999999999999999999999n;
 
     const ownerBalanceBefore = await lusdt.balanceOf(owner);
     console.log("J'AI FAIT UN BALANCE OF", ownerBalanceBefore);
-
+    console.log("on est ligne 26");
     console.log("ACHETEUR ADDRESSE ", acheteurAddress);
     console.log("TOKEN AMOUNT", tokenAmount);
+    console.log("on est ligne 29");
 
     const addr1BalanceBefore = await lusdt.balanceOf(acheteurAddress);
 
