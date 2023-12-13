@@ -30,12 +30,13 @@ export default function MarketPlace() {
   };
 
   useEffect(() => {
+    console.log("MARKET PLACE_PAGE - useEffect - *******");
     getLifeEstateAddresses();
   }, [address]);
 
   const [isBuyMarket, setIsBuyMarket] = useState(true);
-  const [nftToBuy, setNftToBuy] = useState([]);
-  const [nftToSell, setNftToSell] = useState([]);
+  // const [nftToBuy, setNftToBuy] = useState([]);
+  // const [nftToSell, setNftToSell] = useState([]);
   const [lifeEstateAddresses, setLifeEstateAddresses] = useState(null);
 
   return (
@@ -62,11 +63,7 @@ export default function MarketPlace() {
       {isBuyMarket ? (
         <BuyContainer />
       ) : (
-        <SellContainer
-          nftToSell={nftToSell}
-          setNftToSell={setNftToSell}
-          lifeEstateAddresses={lifeEstateAddresses}
-        />
+        <SellContainer lifeEstateAddresses={lifeEstateAddresses} />
       )}
     </>
   );
