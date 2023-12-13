@@ -7,10 +7,17 @@ import SellBtn from "../components/Button/sellBtn";
 
 import { readContract } from "@wagmi/core";
 
-export default function SellCard({ tokenInfo, index }) {
+export default function SellCard({
+  tokenInfo,
+  index,
+  setListedTokens,
+  listedTokens,
+  listindex,
+}) {
   const [propertyName, setPropertyName] = useState("Not Selected");
   const [amountToSell, setAmountToSell] = useState(0);
   const [priceToSell, setPriceToSell] = useState(0);
+  const [avaibleToSell, setAvaibleToSell] = useState(0);
 
   const { address: propertyAddress, tokens } = tokenInfo;
 
@@ -27,9 +34,33 @@ export default function SellCard({ tokenInfo, index }) {
     }
   };
 
+  //useEffect pour maintenir la mise a jour des tokens dosponible a la vente
+  // useEffect(() => {
+  //   setAvaibleToSell(convert(tokenInfo.tokens[index].amount));
+  // }, [tokenInfo.tokens[index].amount]);
+
+  //TEST
+  // useEffect(() => {
+  //   // Trouvez le montant listé pour ce token spécifique
+  //   const listing = listedTokens.find(
+  //     (listing) => listing.tokenId === tokenInfo.tokens[index].id
+  //   );
+  //   const amountListed = listing ? listing.amount : 0;
+
+  //   // Assurez-vous que la conversion de BigNumber est effectuée correctement
+  //   const totalAmount = convert(tokenInfo.tokens[index].amount);
+  //   const listedAmount = convert(amountListed);
+
+  //   // Utilisez la méthode de BigNumber pour soustraire
+  //   const avaibleToSellAmount = totalAmount - listedAmount;
+
+  //   setAvaibleToSell(avaibleToSellAmount);
+  // }, [tokenInfo, index, listedTokens]);
+
   useEffect(() => {
+    console.log("SELL CARD - TOKENINFO", tokenInfo);
     fetchPropertyName();
-  }, [event]);
+  }, []);
 
   const convert = (num) => {
     if (num) return parseInt(num.toString(), 10);
@@ -51,7 +82,10 @@ export default function SellCard({ tokenInfo, index }) {
           <p className="text-base text-gray-700">
             Property Address: {propertyAddress}
           </p>
-          <p className="text-base text-gray-700">PartId: {index}</p>
+          <p className="text-base text-gray-700">
+            {/* PartId: {tokenInfo.tokens[index].id} */}
+            PartId: {listindex}
+          </p>
           <p className="text-base text-gray-700">
             Amount: {convert(tokenInfo.tokens[index].amount)}
           </p>
@@ -79,8 +113,10 @@ export default function SellCard({ tokenInfo, index }) {
 
         <SellBtn
           propertyAddress={propertyAddress}
-          partId={index}
+          // partId={tokenInfo.tokens[index].id}
           amount={tokenInfo.tokens[index].amount}
+          partId={listindex}
+          // amount={1}
           amountToSell={amountToSell}
           priceToSell={priceToSell}
         />
