@@ -6,7 +6,8 @@ async function main() {
   console.log("owner", owner);
   const ownerAddress = owner.address;
 
-  const deployedLUSDTAddress = "0x8fFd15cD87CDb95386E2858A3463FBfe8F900c2D";
+  const deployedLUSDTAddress = "0x2B12a1FcCe88a379229991f40e012B3fE040aB4b";
+
 
   const networkName = hre.network.name;
   console.log(`Vous êtes connecté au réseau : ${networkName}`);
