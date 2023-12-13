@@ -237,4 +237,4 @@ export const abi = [
 ];
 
 export const lifeEstateFactoryAddress =
-  "0x46C7DEb673F35C29bBfe669300e332C7171D1270";
+  "0x5eDA8bcdA8a57AEF93f43ED22fd7a7561991f0C0";
