@@ -14,6 +14,7 @@ import {
   prepareWriteContract,
   writeContract,
   readContract,
+  waitForTransaction,
 } from "@wagmi/core";
 
 import { usePublicClient, useAccount } from "wagmi";
@@ -24,6 +25,7 @@ export default function EstateShareForm({ estateAddress, isDeployed }) {
   const [partPrices, setPartPrices] = useState(Array(11).fill(0));
   const [lastPropertyAddress, setLastPropertyAddress] = useState();
   const [events, setEvents] = useState([]);
+  const [isReady, setIsReady] = useState(false);
 
   const { address } = useAccount();
 
@@ -31,6 +33,10 @@ export default function EstateShareForm({ estateAddress, isDeployed }) {
 
   const initLifeEstatePartsFunc = async () => {
     try {
+      console.log(
+        "!!!!!!!!!!!!! LAST PROPERTY ADDRESS !!!!!!!!!!!!!",
+        lastPropertyAddress
+      );
       const { request } = await prepareWriteContract({
         address: lifeEstateFactoryAddress,
         abi: abi,
@@ -108,13 +114,19 @@ export default function EstateShareForm({ estateAddress, isDeployed }) {
         data
       );
       setLastPropertyAddress(data[data.length - 1]);
+      setIsReady(true);
     } catch (error) {
       console.log("EstateSharesForm - Function_READ LAST NFT : ERROR", error);
     }
   };
 
   useEffect(() => {
+    console.log(
+      "ENTRE DANS LE USEEFFECT ESTATESHAREFORM ISDEPLOYED*-*-*-*--*--*",
+      isDeployed
+    );
     if (isDeployed) {
+      console.log("!!!!ENTRE DANS LE USEEFFECT");
       readNewNft();
     }
   }, [isDeployed]);
@@ -168,8 +180,20 @@ export default function EstateShareForm({ estateAddress, isDeployed }) {
         </div>
 
         <div className="flex flex-wrap justify-center gap-4">
+          {/* <button
+            onClick={(e) => {
+              e.preventDefault();
+              readNewNft();
+            }}
+            className="px-4 py-2 text-black bg-gray-300 border border-transparent rounded-md shadow-sm hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2"
+          >
+            READ EVENT
+          </button> */}
+
           <button
-            disabled={!events}
+            disabled={!isDeployed}
+            // disabled={!events}
+
             onClick={(e) => {
               e.preventDefault();
               initLifeEstatePartsFunc();

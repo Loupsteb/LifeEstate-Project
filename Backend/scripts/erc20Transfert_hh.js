@@ -6,8 +6,7 @@ async function main() {
   console.log("owner", owner);
   const ownerAddress = owner.address;
 
-  const deployedLUSDTAddress = "0x2B12a1FcCe88a379229991f40e012B3fE040aB4b";
-
+  const deployedLUSDTAddress = "0x09C8a4A1F6f013596ce847908488157F7F73A9AE";
 
   const networkName = hre.network.name;
   console.log(`Vous êtes connecté au réseau : ${networkName}`);
@@ -50,7 +49,7 @@ async function main() {
     console.log(`The owner correcty transfer ${tokenAmount} LUSDT to addr1`);
   } else {
     //Acheteur Hardhat
-    const acheteurAddress = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8";
+    const acheteurAddress = "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC";
 
     console.log("Vous êtes connecté au réseau : ", networkName);
 
