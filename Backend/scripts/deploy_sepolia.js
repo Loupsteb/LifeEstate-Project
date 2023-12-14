@@ -37,9 +37,9 @@ async function main() {
       LUSDT address is ${lusdtAddress}`
     );
     //Hardhat :
-    console.log(`Deployement Admin Address : ${accounts[0]}`);
+    // console.log(`Deployement Admin Address : ${accounts[0]}`);
 
-    console.log(`Buyer Address : ${accounts[1]}`);
+    // console.log(`Buyer Address : ${accounts[1]}`);
 
     //Testnet Sepolia :
     console.log(
@@ -115,9 +115,6 @@ async function main() {
       LUSDT address is ${lusdtAddress}`
     );
     //Hardhat :
-    console.log(`Deployement Admin Address : ${accounts[0].address}`);
-
-    console.log(`Buyer Address : ${accounts[1].address}`);
 
     //Testnet Sepolia :
     console.log(

@@ -22,10 +22,19 @@ Ce projet a pour but de permettre de créer des nft représentant des biens immo
 
 ## Deploiement
 
-- Lien déploiement : https://life-estate-project.vercel.app
-- Factory address : 0xb14b5D3d17Bcde4A287a28fb8B759b6Be4E249ED
-- Marketplace address : 0xF13d1377b4AE31804d01cB39f353F025C62EC250
-- LUSDT address : 0x047a81b38BDd6566d00d407870aAaa87fbbAaa0C
+- deploy link : https://life-estate-project.vercel.app
+
+- initial deploy :
+
+* Factory address : 0xb14b5D3d17Bcde4A287a28fb8B759b6Be4E249ED
+* Marketplace address : 0xF13d1377b4AE31804d01cB39f353F025C62EC250
+* LUSDT address : 0x047a81b38BDd6566d00d407870aAaa87fbbAaa0C
+
+- last deploy (demo) :
+
+* Factory address : 0x285cf88ABc66C556d2Bf85509ae02919a7A351fa
+* Marketplace address : 0x72816c2A58a37F5D9609f242Be423F097c0Af621
+* LUSDT address : 0x09C8a4A1F6f013596ce847908488157F7F73A9AE
 
 ---
 

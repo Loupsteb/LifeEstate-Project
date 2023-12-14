@@ -8,13 +8,10 @@ import {
 } from "../../../constant/factoryConstant";
 
 import {
-  usePrepareContractWrite,
-  useContractWrite,
-  useWaitForTransaction,
-  readContract,
-} from "wagmi";
-
-import { prepareWriteContract, writeContract } from "@wagmi/core";
+  prepareWriteContract,
+  writeContract,
+  waitForTransaction,
+} from "@wagmi/core";
 
 export default function EstateSpecsForm({ setEstateAddress, setIsDeployed }) {
   const [estateSpecs, setEstateSpecs] = useState({
@@ -60,7 +57,12 @@ export default function EstateSpecsForm({ setEstateAddress, setIsDeployed }) {
         "ESTATE_SHARES_FORM -Function_DEPLOYESTATE - REQUEST:",
         request
       );
-      setIsDeployed(true);
+      const data = await waitForTransaction({
+        hash,
+      });
+      if (data) {
+        setIsDeployed(true);
+      }
     } catch (error) {
       console.log("ESTATE_SHARES_FORM -Function_DEPLOYESTATE - ERROR", error);
     }

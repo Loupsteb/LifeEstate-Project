@@ -1,13 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { nftAbi, erc20Abi } from "../../../constant/nftConstant";
 
 import MintBtn from "../components/Button/mintBtn";
 
-import { prepareWriteContract, writeContract, readContract } from "@wagmi/core";
+import {
+  prepareWriteContract,
+  writeContract,
+  readContract,
+  waitForTransaction,
+} from "@wagmi/core";
 import { useAccount } from "wagmi";
+import { data } from "autoprefixer";
 
 export default function InputChoice({
   selectedEstate,
@@ -16,8 +22,118 @@ export default function InputChoice({
 }) {
   const [shareId, setShareId] = useState("");
   const [numShares, setNumShares] = useState("");
-  const [approvedToken, setApprovedToken] = useState([]);
+  // const [approvedToken, setApprovedToken] = useState([]);
   const { address } = useAccount();
+  const [step, setStep] = useState(-1);
+
+  const stepSetTokens = async () => {
+    try {
+      //on passe bien ici
+      console.log(
+        "INPUT_CHOICES - Function_mintShares - TRY CATCH SET APPROVED TOKEND FUNC - BEFORE:"
+      );
+      const { request } = await prepareWriteContract({
+        address: selectedEstate,
+        abi: nftAbi,
+        functionName: "setApprovedTokens",
+        args: [[selectedApprovedToken], true],
+      });
+      //REquest retourne un array avec l'address du lifeEstate et non du token selectionné
+
+      console.log(
+        "INPUT_CHOICES - Function_mintShares - PREPARE WRITE_setApprovedTokens:",
+        request
+      );
+
+      const { hash } = await writeContract(request);
+
+      const data = await waitForTransaction({
+        hash,
+      });
+      if (data) {
+        setStep(1);
+      }
+
+      console.log(
+        "INPUT_CHOICES - Function_mintShares - WRITE_setApprovedTokens - LOG HASH:",
+        hash
+      );
+    } catch (error) {
+      console.log(
+        "INPUT_CHOICES - Function_mintShares - WRITE_setApprovedTokens - LOG CATCH ERROR",
+        error
+      );
+    }
+  };
+
+  const stepApprove = async () => {
+    const amount = propertyShares[shareId].price * numShares;
+    console.log("INPUT_CHOICES - Function_mintShares- VARIABLE AMOUNT", amount);
+
+    try {
+      console.log(
+        "INPUT_CHOICES - Function_mintShares - selectedApproveUSDT AVANT"
+      );
+      const { request } = await prepareWriteContract({
+        address: selectedApprovedToken,
+        abi: erc20Abi,
+        functionName: "approve",
+        args: [selectedEstate, amount],
+      });
+      //ON ARRIVE JUSQUE ICI
+      console.log(
+        "INPUT_CHOICES - Function_mintShares - PREPARE-WRITE_APPROVE - LOG REQUEST",
+        request
+      );
+      const { hash } = await writeContract(request);
+
+      const data = await waitForTransaction({
+        hash,
+      });
+      if (data) {
+        setStep(2);
+      }
+
+      console.log(
+        "INPUT_CHOICES - Function_mintShares - PREPARE-WRITE_APPROVE - LOG HASH",
+        hash
+      );
+    } catch (error) {
+      // ICI ERREUR SUITE A SOUMISSION MINT
+      console.log(
+        "INPUT_CHOICES - Function_mintShares - PREPARE-WRITE_APPROVE CATCH - LOG ERROR",
+        error
+      );
+    }
+  };
+
+  const stepMint = async () => {
+    try {
+      console.log(
+        "INPUT_CHOICES - Function_mintShares - BEFORE CALL PREAPREWRITE_MINT_BUY_TOKEN"
+      );
+      console.log();
+      const { request } = await prepareWriteContract({
+        address: selectedEstate,
+        abi: nftAbi,
+        functionName: "mintBuyToken",
+        args: [shareId, numShares, selectedApprovedToken],
+      });
+      const { hash } = await writeContract(request);
+      const data = await waitForTransaction({
+        hash,
+      });
+
+      if (data) {
+        setStep(3);
+      }
+    } catch (error) {
+      console.log(
+        "INPUT_CHOICES - Function_mintShares - PREPARE-WRITE_MINT_BUY_TOKEN - LOG ERROR",
+        error
+      );
+    }
+  };
 
   const mintShares = async () => {
     let valideInput = false;
@@ -40,38 +156,20 @@ export default function InputChoice({
       "INPUT_CHOICES - Function_mintShares - VARIABLE_: selectedApprovedToken:",
       selectedApprovedToken
     );
-    console.log(
-      "INPUT_CHOICES - Function_mintShares - VARIABLE_: Selected Estate",
-      selectedEstate
-    );
-    console.log(
-      "INPUT_CHOICES - Function_mintShares - VARIABLE_: Selected Approved Token",
-      selectedApprovedToken
-    );
-    //Valeur de l'address du CALLER
-    console.log(
-      "INPUT_CHOICES - Function_mintShares - VARIABLE_: Mint Shares Account",
-      address
-    );
-
-    try {
-      const data = await readContract({
-        address: selectedEstate,
-        abi: nftAbi,
-        functionName: "owner",
-      });
-      console.log(
-        //Valeur de l'address du caller
-        "INPUT_CHOICES - Function_mintShares - READ CONTRACT OWNER VARIABLE_: OWNER DU NFT",
-        data
-      );
-    } catch (error) {
-      console.log(
-        "INPUT_CHOICES - Function_mintShares - READ CONTRACT OWNER VARIABLE_: ERROR",
-        error
-      );
-    }
-    //call setApprovedTokens comme test l.56
+    // console.log(
+    //   "INPUT_CHOICES - Function_mintShares - VARIABLE_: Selected Estate",
+    //   selectedEstate
+    // );
+    // console.log(
+    //   "INPUT_CHOICES - Function_mintShares - VARIABLE_: Selected Approved Token",
+    //   selectedApprovedToken
+    // );
+    // //Valeur de l'address du CALLER
+    // console.log(
+    //   "INPUT_CHOICES - Function_mintShares - VARIABLE_: Mint Shares Account",
+    //   address
+    // );
+    // stepSetTokens();
     try {
       //on passe bien ici
       console.log(
@@ -90,27 +188,30 @@ export default function InputChoice({
         request
       );
       const { hash } = await writeContract(request);
-      //DERNIERE ETAPE DE VALIDE
+
       console.log(
         "INPUT_CHOICES - Function_mintShares - WRITE_setApprovedTokens - LOG HASH:",
         hash
       );
-    } catch (error) {
+      // } catch (error) {
+      //   console.log(
+      //     "INPUT_CHOICES - Function_mintShares - WRITE_setApprovedTokens - LOG CATCH ERROR",
+      //     error
+      //   );
+      // }
+      // // stepApprove();
+      const amount = propertyShares[shareId].price * numShares;
       console.log(
-        "INPUT_CHOICES - Function_mintShares - WRITE_setApprovedTokens - LOG CATCH ERROR",
-        error
+        "INPUT_CHOICES - Function_mintShares- VARIABLE AMOUNT",
+        amount
       );
-    }
-    //NON VU PAR L'appkication
-    const amount = propertyShares[shareId].price * numShares;
-    console.log("INPUT_CHOICES - Function_mintShares- VARIABLE AMOUNT", amount);
 
-    //call setApprovedTokens comme test l.56
-    try {
+      // //call setApprovedTokens comme test l.56
+      // try {
       console.log(
         "INPUT_CHOICES - Function_mintShares - selectedApproveUSDT AVANT"
       );
-      const { request } = await prepareWriteContract({
+      const { request2 } = await prepareWriteContract({
         address: selectedApprovedToken,
         abi: erc20Abi,
         functionName: "approve",
@@ -119,33 +220,34 @@ export default function InputChoice({
       //ON ARRIVE JUSQUE ICI
       console.log(
         "INPUT_CHOICES - Function_mintShares - PREPARE-WRITE_APPROVE - LOG REQUEST",
-        request
+        request2
       );
-      const { hash } = await writeContract(request);
+      const { hash2 } = await writeContract(request2);
       //DERNIERE ETAPE DE VALIDE
       console.log(
         "INPUT_CHOICES - Function_mintShares - PREPARE-WRITE_APPROVE - LOG HASH",
-        hash
+        hash2
       );
-    } catch (error) {
-      // ICI ERREUR SUITE A SOUMISSION MINT
-      console.log(
-        "INPUT_CHOICES - Function_mintShares - PREPARE-WRITE_APPROVE CATCH - LOG ERROR",
-        error
-      );
-    }
-    try {
+      // } catch (error) {
+      //   // ICI ERREUR SUITE A SOUMISSION MINT
+      //   console.log(
+      //     "INPUT_CHOICES - Function_mintShares - PREPARE-WRITE_APPROVE CATCH - LOG ERROR",
+      //     error
+      //   );
+      // }
+      // // stepMint();
+      // try {
       console.log(
         "INPUT_CHOICES - Function_mintShares - BEFORE CALL PREAPREWRITE_MINT_BUY_TOKEN"
       );
       console.log();
-      const { request } = await prepareWriteContract({
+      const { request3 } = await prepareWriteContract({
         address: selectedEstate,
         abi: nftAbi,
         functionName: "mintBuyToken",
         args: [shareId, numShares, selectedApprovedToken],
       });
-      const { hash } = await writeContract(request);
+      const { hash3 } = await writeContract(request3);
     } catch (error) {
       console.log(
         "INPUT_CHOICES - Function_mintShares - PREPARE-WRITE_MINT_BUY_TOKEN - LOG ERROR",
@@ -154,30 +256,47 @@ export default function InputChoice({
     }
   };
 
-  const readApprovedToken = async () => {
-    try {
-      const data = await readContract({
-        address: selectedEstate,
-        abi: nftAbi,
-        functionName: "approvedTokensArray",
-      });
-      console.log(
-        "INPUT_CHOICES - Function_readApprovedToken - READ_CONTRACT-APPROVED_TOKENS_ARRAY - LOG HASH",
-        data
-      );
-      setApprovedToken(data);
-    } catch (error) {
-      console.log(
-        "INPUT_CHOICES - Function_readApprovedToken - READ_CONTRACT-APPROVED_TOKENS_ARRAY - LOG ERROR",
-        error
-      );
-    }
-  };
+  //   try {
+  //     const data = await readContract({
+  //       address: selectedEstate,
+  //       abi: nftAbi,
+  //       functionName: "approvedTokensArray",
+  //     });
+  //     console.log(
+  //       "INPUT_CHOICES - Function_readApprovedToken - READ_CONTRACT-APPROVED_TOKENS_ARRAY - LOG HASH",
+  //       data
+  //     );
+  //     setApprovedToken(data);
+  //   } catch (error) {
+  //     console.log(
+  //       "INPUT_CHOICES - Function_readApprovedToken - READ_CONTRACT-APPROVED_TOKENS_ARRAY - LOG ERROR",
+  //       error
+  //     );
+  //   }
+  // };
 
   const handleSubmit = () => {
     event.preventDefault();
-    mintShares();
+    // mintShares();
+    setStep(0);
   };
+
+  useEffect(() => {
+    console.log("INPUT_CHOICES - USEEFFECT STEP");
+    if (step === 0) {
+      console.log("INPUT_CHOICES - USEEFFECT STEP - IF STEP = 0", step);
+      stepSetTokens();
+      // setStep(1);
+    } else if (step === 1) {
+      console.log("INPUT_CHOICES - USEEFFECT STEP - IF STEP = 1", step);
+      stepApprove();
+      // setStep(2);
+    } else if (step === 2) {
+      console.log("INPUT_CHOICES - USEEFFECT STEP - IF STEP = 2", step);
+      stepMint();
+      // setStep(3);
+    }
+  }, [step]);
 
   return (
     <form
@@ -218,3 +337,138 @@ export default function InputChoice({
     </form>
   );
 }
+
+// const mintShares = async () => {
+//   let valideInput = false;
+//   propertyShares.map((propertyShare, index) => {
+//     if (index === parseInt(shareId, 10)) {
+//       if (propertyShare.mintSupply < parseInt(numShares, 10)) {
+//         console.log(
+//           "INPUT_CHOICES - Function_mintShares - Not enough shares to mint"
+//         );
+//       } else {
+//         console.log(
+//           "INPUT_CHOICES - Function_mintShares - Validate Input Passe a True"
+//         );
+//         valideInput = true;
+//       }
+//     }
+//   });
+
+//   console.log(
+//     "INPUT_CHOICES - Function_mintShares - VARIABLE_: selectedApprovedToken:",
+//     selectedApprovedToken
+//   );
+//   console.log(
+//     "INPUT_CHOICES - Function_mintShares - VARIABLE_: Selected Estate",
+//     selectedEstate
+//   );
+//   console.log(
+//     "INPUT_CHOICES - Function_mintShares - VARIABLE_: Selected Approved Token",
+//     selectedApprovedToken
+//   );
+//   //Valeur de l'address du CALLER
+//   console.log(
+//     "INPUT_CHOICES - Function_mintShares - VARIABLE_: Mint Shares Account",
+//     address
+//   );
+
+//   // try {
+//   //   const data = await readContract({
+//   //     address: selectedEstate,
+//   //     abi: nftAbi,
+//   //     functionName: "owner",
+//   //   });
+//   //   console.log(
+//   //     //Valeur de l'address du caller
+//   //     "INPUT_CHOICES - Function_mintShares - READ CONTRACT OWNER VARIABLE_: OWNER DU NFT",
+//   //     data
+//   //   );
+//   // } catch (error) {
+//   //   console.log(
+//   //     "INPUT_CHOICES - Function_mintShares - READ CONTRACT OWNER VARIABLE_: ERROR",
+//   //     error
+//   //   );
+//   // }
+//   //call setApprovedTokens comme test l.56
+//   try {
+//     //on passe bien ici
+//     console.log(
+//       "INPUT_CHOICES - Function_mintShares - TRY CATCH SET APPROVED TOKEND FUNC - BEFORE:"
+//     );
+//     const { request } = await prepareWriteContract({
+//       address: selectedEstate,
+//       abi: nftAbi,
+//       functionName: "setApprovedTokens",
+//       args: [[selectedApprovedToken], true],
+//     });
+//     //REquest retourne un array avec l'address du lifeEstate et non du token selectionné
+
+//     console.log(
+//       "INPUT_CHOICES - Function_mintShares - PREPARE WRITE_setApprovedTokens:",
+//       request
+//     );
+//     const { hash } = await writeContract(request);
+
+//     console.log(
+//       "INPUT_CHOICES - Function_mintShares - WRITE_setApprovedTokens - LOG HASH:",
+//       hash
+//     );
+//   } catch (error) {
+//     console.log(
+//       "INPUT_CHOICES - Function_mintShares - WRITE_setApprovedTokens - LOG CATCH ERROR",
+//       error
+//     );
+//   }
+//   //NON VU PAR L'appkication
+//   const amount = propertyShares[shareId].price * numShares;
+//   console.log("INPUT_CHOICES - Function_mintShares- VARIABLE AMOUNT", amount);
+
+//   //call setApprovedTokens comme test l.56
+//   try {
+//     console.log(
+//       "INPUT_CHOICES - Function_mintShares - selectedApproveUSDT AVANT"
+//     );
+//     const { request } = await prepareWriteContract({
+//       address: selectedApprovedToken,
+//       abi: erc20Abi,
+//       functionName: "approve",
+//       args: [selectedEstate, amount],
+//     });
+//     //ON ARRIVE JUSQUE ICI
+//     console.log(
+//       "INPUT_CHOICES - Function_mintShares - PREPARE-WRITE_APPROVE - LOG REQUEST",
+//       request
+//     );
+//     const { hash } = await writeContract(request);
+//     //DERNIERE ETAPE DE VALIDE
+//     console.log(
+//       "INPUT_CHOICES - Function_mintShares - PREPARE-WRITE_APPROVE - LOG HASH",
+//       hash
+//     );
+//   } catch (error) {
+//     // ICI ERREUR SUITE A SOUMISSION MINT
+//     console.log(
+//       "INPUT_CHOICES - Function_mintShares - PREPARE-WRITE_APPROVE CATCH - LOG ERROR",
+//       error
+//     );
+//   }
+//   try {
+//     console.log(
+//       "INPUT_CHOICES - Function_mintShares - BEFORE CALL PREAPREWRITE_MINT_BUY_TOKEN"
+//     );
+//     console.log();
+//     const { request } = await prepareWriteContract({
+//       address: selectedEstate,
+//       abi: nftAbi,
+//       functionName: "mintBuyToken",
+//       args: [shareId, numShares, selectedApprovedToken],
+//     });
+//     const { hash } = await writeContract(request);
+//   } catch (error) {
+//     console.log(
+//       "INPUT_CHOICES - Function_mintShares - PREPARE-WRITE_MINT_BUY_TOKEN - LOG ERROR",
+//       error
+//     );
+//   }
+// };
