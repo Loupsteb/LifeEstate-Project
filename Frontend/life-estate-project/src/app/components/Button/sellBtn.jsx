@@ -102,51 +102,7 @@ export default function SellBtn({
   };
   const handleSell = () => {
     setStep(0);
-    // try {
-    //   const { request } = await prepareWriteContract({
-    //     address: propertyAddress,
-    //     abi: nftAbi,
-    //     functionName: "setApprovalForAll",
-    //     args: [marketPlaceAddress, true],
-    //   });
-    //   const { hash } = await writeContract(request);
-    // } catch (error) {
-    //   console.log(
-    //     "SELL BTN - WRITE - Function_HANDLESELL_APPROVE_MARKET_PLACE - LOG ERROR",
-    //     error
-    //   );
-    // }
-    // try {
-    //   console.log(
-    //     "SELL BTN - PREPARE_WRITE - Function_HANDLESELL_LIST_TOKEN -"
-    //   );
-    //   const partIdNumber = parseInt(partId.toString(), 10);
-    //   const amountNumber = parseInt(amountToSell.toString(), 10);
-    //   const priceToSellNumber = parseInt(priceToSell.toString(), 10);
-    //   console.log(
-    //     `SELL BTN _ LOG DE VERIFpartId ${partId} - amount ${amountToSell} - priceToSell ${priceToSell}`
-    //   );
-    //   const { request } = await prepareWriteContract({
-    //     address: marketPlaceAddress,
-    //     abi: marketAbi,
-    //     functionName: "listToken",
-    //     args: [partIdNumber, amountNumber, priceToSellNumber, propertyAddress],
-    //   });
-    //   console.log(
-    //     "SELL BTN - PREPARE_WRITE - Function_HANDLESELL_LIST_TOKEN - LOG REQUEST",
-    //     request
-    //   );
-    //   const { hash } = await writeContract(request);
-    //   console.log(
-    //     "SELL BTN - WRITE - Function_HANDLESELL_LIST_TOKEN - LOG HASH",
-    //     hash
-    //   );
-    // } catch (error) {
-    //   console.log(
-    //     "SELL BTN - WRITE - Function_HANDLESELL_LIST_TOKEN - LOG ERROR",
-    //     error
-    //   );
-    // }
+    
   };
   useEffect(() => {
     if (step === 0) {
