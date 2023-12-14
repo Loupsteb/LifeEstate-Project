@@ -34,29 +34,6 @@ export default function SellCard({
     }
   };
 
-  //useEffect pour maintenir la mise a jour des tokens dosponible a la vente
-  // useEffect(() => {
-  //   setAvaibleToSell(convert(tokenInfo.tokens[index].amount));
-  // }, [tokenInfo.tokens[index].amount]);
-
-  //TEST
-  // useEffect(() => {
-  //   // Trouvez le montant listé pour ce token spécifique
-  //   const listing = listedTokens.find(
-  //     (listing) => listing.tokenId === tokenInfo.tokens[index].id
-  //   );
-  //   const amountListed = listing ? listing.amount : 0;
-
-  //   // Assurez-vous que la conversion de BigNumber est effectuée correctement
-  //   const totalAmount = convert(tokenInfo.tokens[index].amount);
-  //   const listedAmount = convert(amountListed);
-
-  //   // Utilisez la méthode de BigNumber pour soustraire
-  //   const avaibleToSellAmount = totalAmount - listedAmount;
-
-  //   setAvaibleToSell(avaibleToSellAmount);
-  // }, [tokenInfo, index, listedTokens]);
-
   useEffect(() => {
     console.log("SELL CARD - TOKENINFO", tokenInfo);
     fetchPropertyName();
@@ -69,11 +46,6 @@ export default function SellCard({
 
   return (
     <div className="max-w-sm mx-4 my-6 overflow-hidden rounded shadow-lg">
-      {/* <img
-        className="w-full"
-        src="/img/card-top.jpg"
-        alt="Sunset in the mountains"
-      /> */}
       <div className="px-6 py-4">
         <div className="mb-2 text-xl font-bold">
           Property Name: {propertyName}

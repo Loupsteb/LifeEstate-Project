@@ -1,4 +1,4 @@
-  "use client";
+"use client";
 
 import { useEffect, useState, useCallback } from "react";
 import { watchContractEvent, readContract } from "@wagmi/core";
@@ -184,10 +184,6 @@ export default function sellContainer({ lifeEstateAddresses }) {
 
   useEffect(() => {
     fetchListTokenLogs();
-    // if (userTokens.length === 0 && !isDone) {
-
-    //   readTest();
-    // }
   }, []);
 
   useEffect(() => {
@@ -218,38 +214,3 @@ export default function sellContainer({ lifeEstateAddresses }) {
     </>
   );
 }
-
-// const readAllNft = async (addressArray) => {
-//   console.log("BuyContainers - Voir si readAllNft LU***", addressArray);
-//   const userAddress = address;
-
-//   // Créer un tableau de promesses pour lire les contrats
-//   const promises = addressArray.map((contractAddress) => {
-//     return readContract({
-//       address: contractAddress,
-//       abi: nftAbi,
-//       functionName: "getTokensOf",
-//       args: [userAddress],
-//     })
-//       .then((data) => ({
-//         address: contractAddress,
-//         tokens: data
-//           .map((AMOUNT, id) => ({ id: id, amount: AMOUNT }))
-//           .filter((token) => token.amount !== 0n),
-//       }))
-//       .catch((error) => {
-//         console.error("READ CONTRACT ERROR:", error);
-//         return null; // Vous pouvez choisir de retourner null ou de gérer l'erreur différemment
-//       });
-//   });
-
-//   // Attendre que toutes les promesses soient résolues avant de mettre à jour l'état
-//   try {
-//     const tokensArray = await Promise.all(promises);
-//     // Filtrer les résultats nuls dûs aux erreurs
-//     const validTokens = tokensArray.filter((token) => token !== null);
-//     setUserTokens(validTokens);
-//   } catch (error) {
-//     console.error("SELLCONTAINERS - Function_readAllNft - ERROR", error);
-//   }
-// };
