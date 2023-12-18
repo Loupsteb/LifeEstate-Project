@@ -52,20 +52,6 @@ Voici la liste de la stack utilisée pour ce projet :
 
 ---
 
-## Stack
-
-- en tant qu'utilisateur j'accede à la page de market place
-- en tant qu'utilisateur je vais dans la section achat
-- en tant qu'utilisateur je clique sur le bouton acheter de l'annonce qui m'intéresse
-
----
-
-- en tant que vendeur de part je vais dans la section market place
-- en tant que vendeur de part je vais dans la section vente
-- en tant que vendeur de part je mentionne le montant de part que je souhaite vendre
-- en tant que vendeur de part je mentionne le prix de vente auquel je souhaite vendre mes parts
-- en tant que vendeur de part je clique sur le bouton vendre afin de confirmer la mise en ligne de mon annonce
-
 ## Usage Local
 
 - Clone de projet : git clone [https://github.com/Loupsteb/LifeEstate-Project](https://github.com/Loupsteb/LifeEstate-Project)
