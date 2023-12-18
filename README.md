@@ -50,22 +50,6 @@ Voici la liste de la stack utilisée pour ce projet :
 - Tailwind
 - Vercel
 
-## Scénario
-
-- je me connecte avec l'adresse du owner : j'accède à la page admin
-- en tant qu'owner je créé une propriété avec des spécificités précises
-- en tant qu'owner je créé les parts associées avec la supply disponible pour le mint et le prix associé a chaque part
-- Je soumet ma demande et inscrit le bien sur la blockchain
-
----
-
-- en tant qu'utilisateur de la plateforme j'accede a la page de mint
-- en tant qu'utilisateur je selectionne l'adresse de la propriété
-- en tant qu'utilisateur je selectionne l'adresse de token que je souhaite pour payer
-- en tant qu'utilisateur je rentre l'id de la part que je souhaite acheter
-- en tant qu'utilisateur je rentre le nombre de part que je souhaite acheter
-- en tant qu'utilisateur je confirme mon choix en cliquant sur mint
-
 ---
 
 ## Stack
